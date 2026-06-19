@@ -1,3 +1,4 @@
+import 'package:aurelle_flutter/core/navigation/appRouter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:the_responsive_builder/the_responsive_builder.dart';
@@ -13,46 +14,34 @@ void main() async {
   runApp(
     ProviderScope(
       child: TheResponsiveBuilder(
-        builder: (context, orientation, screenType) => const MyApp(),
+        builder: (context, orientation, screenType) => const AurelleAPP(),
       ),
     ),
   );
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class AurelleAPP extends ConsumerStatefulWidget {
+  
+  const AurelleAPP({super.key});
+
+  @override
+  ConsumerState<ConsumerStatefulWidget> createState() => _AurelleAPPState();
+}
+
+class _AurelleAPPState extends ConsumerState<AurelleAPP> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+        final router = ref.watch(routerProvider);
+    return MaterialApp.router(
       title: 'Aurelle',
-      theme: ThemeData(colorScheme: .fromSeed(seedColor: Colors.deepPurple)),
-      home: const MyHomePage(),
+      debugShowCheckedModeBanner: false,
+ 
+      // ── Theme ─────────────────────────────────────────────────────────────
+      // theme: 
+ 
+      // ── Router ────────────────────────────────────────────────────────────
+      routerConfig: router,
     );
-  }
 }
-
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key,});
-
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-     
-      body: Center(
-        child: Image.asset(
-          'assets/logo/aurelle_logo_portrait.png',
-          height: 200,
-        )
-      ),
-     
-    );
-  }
 }
