@@ -41,12 +41,27 @@ dependencies:
   flutter_riverpod:
   flutter_animate:
   dio:
-  flutter_secure_storage:
   cached_network_image:
   flutter_svg:
   shimmer:
   flutter_screenutil:
   intl:
+  
+
+
+flutter_native_splash:
+  color: "#FFFFFF"
+  color_dark: "#000000"
+  fullscreen: true
+  image: assets/logo/aurellex_light.png
+  image_dark: assets/logo/aurellex.png
+  android_gravity: center 
+
+  android_12:
+    color: "#FFFFFF"
+    color_dark: "#000000"
+    image: assets/logo/aurellex_light.png
+    image_dark: assets/logo/aurellex.png
 
 dev_dependencies:
   flutter_test:
@@ -58,6 +73,16 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
+
+
+
+flutter_launcher_icons:
+  android: "aurelle_icon"
+  ios: true
+  image_path: assets/logo/aurellex.png
+  min_sdk_android: 21 # android min sdk min:16, default 21
+ 
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
