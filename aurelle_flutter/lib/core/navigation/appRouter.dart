@@ -13,27 +13,11 @@ import 'package:aurelle_flutter/features/screens/product.dart';
 import 'package:aurelle_flutter/features/screens/profile.dart';
 import 'package:aurelle_flutter/features/screens/setting.dart';
 import 'package:aurelle_flutter/features/screens/shop.dart';
+import 'package:aurelle_flutter/features/screens/splashScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart' hide NoTransitionPage;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-// import '../shell/app_shell.dart';
-// import '../shell/page_transitions.dart';
-// import '../features/auth/screens/splash_screen.dart';
-// import '../features/auth/screens/onboarding_screen.dart';
-// import '../features/auth/screens/login_screen.dart';
-// import '../features/auth/screens/signup_screen.dart';
-// import '../features/home/screens/home_screen.dart';
-// import '../features/shop/screens/shop_screen.dart';
-// import '../features/shop/screens/product_detail_screen.dart';
-// import '../features/shop/screens/category_screen.dart';
-// import '../features/cart/screens/cart_screen.dart';
-// import '../features/profile/screens/profile_screen.dart';
-// import '../features/profile/screens/orders_screen.dart';
-// import '../features/profile/screens/order_detail_screen.dart';
-// import '../features/profile/screens/settings_screen.dart';
-// import '../features/profile/screens/qa_screen.dart';
-// import 'app_routes.dart';
 
 // ── Provider ──────────────────────────────────────────────────────────────────
 /// Expose the router as a Riverpod provider so it can be refreshed
@@ -61,7 +45,11 @@ final routerProvider = Provider<GoRouter>((ref) {
 
     routes: [
       // ── Splash ──────────────────────────────────────────────────────────
-  
+   GoRoute(
+        path: AppRoutes.splash,
+        pageBuilder: (context, state) => SlideUpTransitionPage(
+            key: state.pageKey, child: const Splashscreen()),
+      ),
 
       // ── Onboarding ──────────────────────────────────────────────────────
       GoRoute(

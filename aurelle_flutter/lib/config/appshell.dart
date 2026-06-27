@@ -64,6 +64,7 @@ class _AppShellState extends State<AppShell> {
     final selectedIndex = _selectedIndex(context);
 
     return Scaffold(
+      
       // ── Body ──────────────────────────────────────────────────────────────
       // [child] is provided by ShellRoute — it's the active tab's subtree.
       // Using IndexedStack here would preserve tab state (scroll position,
@@ -76,10 +77,10 @@ class _AppShellState extends State<AppShell> {
       body: widget.child,
 
       // ── Bottom Navigation Bar ─────────────────────────────────────────────
-      bottomNavigationBar: _AurelleBottomNav(
-        selectedIndex: selectedIndex,
-        onTap: (i) => _onTap(context, i),
-      ),
+      // bottomNavigationBar: _AurelleBottomNav(
+      //   selectedIndex: selectedIndex,
+      //   onTap: (i) => _onTap(context, i),
+      // ),
     );
   }
 }

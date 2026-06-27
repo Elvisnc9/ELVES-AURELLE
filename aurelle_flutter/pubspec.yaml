@@ -37,7 +37,6 @@ dependencies:
   the_responsive_builder:
   freezed:
   go_router:
-  flutter_native_splash:
   flutter_riverpod:
   flutter_animate:
   dio:
@@ -49,19 +48,6 @@ dependencies:
   
 
 
-flutter_native_splash:
-  color: "#FFFFFF"
-  color_dark: "#000000"
-  fullscreen: true
-  image: assets/logo/aurellex_light.png
-  image_dark: assets/logo/aurellex.png
-  android_gravity: center 
-
-  android_12:
-    color: "#FFFFFF"
-    color_dark: "#000000"
-    image: assets/logo/aurellex_light.png
-    image_dark: assets/logo/aurellex.png
 
 dev_dependencies:
   flutter_test:
