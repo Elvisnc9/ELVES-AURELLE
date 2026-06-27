@@ -48,13 +48,13 @@ final routerProvider = Provider<GoRouter>((ref) {
    GoRoute(
         path: AppRoutes.splash,
         pageBuilder: (context, state) => SlideUpTransitionPage(
-            key: state.pageKey, child: const Splashscreen()),
+            key: state.pageKey, child: const SplashScreen()),
       ),
 
       // ── Onboarding ──────────────────────────────────────────────────────
       GoRoute(
         path: AppRoutes.onboarding,
-        pageBuilder: (context, state) => SlideUpTransitionPage(
+        pageBuilder: (context, state) => NoTransitionPage(
             key: state.pageKey, child: const OnboardingScreen()),
       ),
 

@@ -64,6 +64,7 @@ class _AppShellState extends State<AppShell> {
     final selectedIndex = _selectedIndex(context);
 
     return Scaffold(
+      backgroundColor: Colors.white,
       
       // ── Body ──────────────────────────────────────────────────────────────
       // [child] is provided by ShellRoute — it's the active tab's subtree.
@@ -77,10 +78,10 @@ class _AppShellState extends State<AppShell> {
       body: widget.child,
 
       // ── Bottom Navigation Bar ─────────────────────────────────────────────
-      // bottomNavigationBar: _AurelleBottomNav(
-      //   selectedIndex: selectedIndex,
-      //   onTap: (i) => _onTap(context, i),
-      // ),
+      bottomNavigationBar: _AurelleBottomNav(
+        selectedIndex: selectedIndex,
+        onTap: (i) => _onTap(context, i),
+      ),
     );
   }
 }
