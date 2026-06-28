@@ -62,9 +62,10 @@ class _AppShellState extends State<AppShell> {
   @override
   Widget build(BuildContext context) {
     final selectedIndex = _selectedIndex(context);
+    final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       
       // ── Body ──────────────────────────────────────────────────────────────
       // [child] is provided by ShellRoute — it's the active tab's subtree.
@@ -118,6 +119,7 @@ class _AurelleBottomNav extends StatelessWidget {
       indicatorColor: Colors.transparent,
       labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
       destinations: shellNavItems.map((item) {
+        // ignore: unused_local_variable
         final isSelected = shellNavItems.indexOf(item) == selectedIndex;
         return NavigationDestination(
           icon: Icon(item.icon),

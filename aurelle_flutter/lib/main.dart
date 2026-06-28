@@ -1,11 +1,18 @@
 import 'package:aurelle_flutter/core/navigation/appRouter.dart';
+import 'package:aurelle_flutter/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:the_responsive_builder/the_responsive_builder.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await GoogleFonts.pendingFonts([
+    GoogleFonts.playfair(),
+    GoogleFonts.dancingScript(),
+  ]);
 
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(statusBarColor: Colors.transparent),
@@ -36,7 +43,8 @@ class _AurelleAPPState extends ConsumerState<AurelleAPP> {
     return MaterialApp.router(
       title: 'Aurelle',
       debugShowCheckedModeBanner: false,
- 
+      themeMode: ThemeMode.light,
+      theme: AppTheme.theme,
       // ── Theme ─────────────────────────────────────────────────────────────
       // theme: 
  

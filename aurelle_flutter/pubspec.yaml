@@ -37,6 +37,7 @@ dependencies:
   the_responsive_builder:
   freezed:
   go_router:
+  google_fonts:
   flutter_riverpod:
   flutter_animate:
   dio:
@@ -46,6 +47,7 @@ dependencies:
   flutter_screenutil:
   intl:
   lottie: 
+  video_player: 
 
 
 
@@ -77,6 +79,7 @@ flutter:
   assets:
     - assets/logo/
     - assets/anim/
+    - assets/images/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

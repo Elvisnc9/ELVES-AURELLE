@@ -14,7 +14,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    Timer(const Duration(seconds: 3), () {
+    Timer(const Duration(seconds: 5), () {
       if (mounted) context.go('/onboarding');
     });
   }
@@ -32,7 +32,10 @@ class _SplashScreenState extends State<SplashScreen> {
               width: 100.w,
             ),
             
-           
+            CircularProgressIndicator(
+              strokeWidth: 5,
+            
+            ),
           ],
         ),
       ),
