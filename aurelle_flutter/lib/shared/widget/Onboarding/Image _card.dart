@@ -53,7 +53,7 @@ class OverlapImageCard extends StatelessWidget {
                         
                         border: Border.all(
                           color: selected ? _gold : Colors.transparent,
-                          width: 3.5,
+                          width: 1.5,
                         ),
                           ),
                         ),
@@ -81,8 +81,8 @@ class OverlapImageCard extends StatelessWidget {
           label,
           textAlign: TextAlign.center,
           style: TextStyle(
-            fontSize: 15.sp,
-            fontWeight: FontWeight.w600,
+            fontSize: 12.sp,
+            fontWeight: FontWeight.w400,
             color: Colors.black
           ),
             ),

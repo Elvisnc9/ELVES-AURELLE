@@ -12,6 +12,7 @@ class _HomescreenState extends ConsumerState<Homescreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Container();
+    return Center(child: 
+    Text('HOMESCREEN'),);
   }
 }

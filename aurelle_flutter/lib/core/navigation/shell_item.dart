@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 /// Keep this as a plain data class — no BuildContext dependency.
 class ShellNavItem {
   final String label;
-  final IconData icon;
+  final String icon;
   final IconData activeIcon;
   final String rootPath; // the tab's root route path
 
@@ -22,25 +22,25 @@ class ShellNavItem {
 const List<ShellNavItem> shellNavItems = [
   ShellNavItem(
     label: 'Home',
-    icon: Icons.home_outlined,
+    icon: 'assets/icon/home.png',
     activeIcon: Icons.home,
     rootPath: AppRoutes.home,
   ),
   ShellNavItem(
     label: 'Shop',
-    icon: Icons.grid_view_outlined,
+    icon: 'assets/icon/shopping-cart.png',
     activeIcon: Icons.grid_view,
     rootPath: AppRoutes.shop,
   ),
   ShellNavItem(
     label: 'Cart',
-    icon: Icons.shopping_bag_outlined,
+    icon: 'assets/icon/parcel.png',
     activeIcon: Icons.shopping_bag,
     rootPath: AppRoutes.cart,
   ),
   ShellNavItem(
     label: 'Profile',
-    icon: Icons.person_outline,
+    icon: 'assets/icon/user.png',
     activeIcon: Icons.person,
     rootPath: AppRoutes.profile,
   ),

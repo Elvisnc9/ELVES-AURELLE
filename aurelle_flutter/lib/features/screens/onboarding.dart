@@ -57,8 +57,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   void _completeOnboarding() {
-    // TODO: persist `ref.read(onboardingProvider).state` selections
-    // (local storage + send to backend) before navigating away.
     context.go('/home');
   }
 
@@ -100,6 +98,10 @@ TextTheme get theme => Theme.of(context).textTheme;
                         'STEP ${state.currentPage + 1} OF $_totalSteps',
                         style:  theme.titleSmall
                       ),
+
+
+
+                      
                     ],
                   ),
                    SizedBox(height: 2.h),
@@ -115,7 +117,7 @@ TextTheme get theme => Theme.of(context).textTheme;
             Expanded(
               child: PageView(
                 controller: _pageController,
-                physics: const NeverScrollableScrollPhysics(),
+                physics: const BouncingScrollPhysics(),
                 onPageChanged: (index) =>
                     ref.read(onboardingProvider.notifier).goToPage(index),
                 children: const [
@@ -278,11 +280,11 @@ class _BrandSelectionPageState extends ConsumerState<BrandSelectionPage> {
               contentPadding: const EdgeInsets.symmetric(vertical: 12),
               border: OutlineInputBorder(
                
-                borderSide: const BorderSide(color: AppColors.black),
+                borderSide:  BorderSide(color: AppColors.black, ),
               ),
               enabledBorder: OutlineInputBorder(
                
-                borderSide: const BorderSide(color: AppColors.black),
+                borderSide: BorderSide(color: AppColors.black, width: 0.8),
               ),
              
             ),

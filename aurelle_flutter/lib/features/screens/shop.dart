@@ -12,6 +12,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Container();
+    return Center(child: 
+    Text('SHOP SCREEN'),);
   }
 }

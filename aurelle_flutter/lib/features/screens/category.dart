@@ -12,6 +12,8 @@ class _CategoryScreenState extends ConsumerState<CategoryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Container();
+    return Center(child: 
+    Text('CATEGORIES'),);
   }
 }
+

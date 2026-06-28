@@ -43,7 +43,7 @@ class OnboardingBottomBar extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 4),
         ],
         if (onSkip != null) ...[
           Padding(

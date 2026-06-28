@@ -12,6 +12,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Container();
+    return Center(child: 
+    Text('CART'),);
   }
 }

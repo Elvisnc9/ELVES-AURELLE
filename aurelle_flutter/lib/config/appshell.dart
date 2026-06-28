@@ -1,6 +1,7 @@
 import 'package:aurelle_flutter/core/navigation/shell_item.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:the_responsive_builder/the_responsive_builder.dart';
 
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -115,15 +116,14 @@ class _AurelleBottomNav extends StatelessWidget {
       onDestinationSelected: onTap,
       // Luxury-app feel: no elevation, tight label style
       elevation: 0,
-      backgroundColor: theme.colorScheme.surface,
+      backgroundColor: theme.scaffoldBackgroundColor,
       indicatorColor: Colors.transparent,
       labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
       destinations: shellNavItems.map((item) {
         // ignore: unused_local_variable
         final isSelected = shellNavItems.indexOf(item) == selectedIndex;
         return NavigationDestination(
-          icon: Icon(item.icon),
-          selectedIcon: Icon(item.activeIcon),
+          icon: Image.asset(item.icon, height: isSelected? 3.h : 2.5.h,    ),
           label: item.label,
           tooltip: item.label,
         );

@@ -34,7 +34,7 @@ class BrandTile extends StatelessWidget {
           color: AppColors.lightSurface,
           border: Border.all(
             color: selected ? _gold : Colors.transparent,
-            width: selected ? 3.5 : 1,
+            width: selected ? 1.5 : 1,
           ),
         ),
         child: Stack(
