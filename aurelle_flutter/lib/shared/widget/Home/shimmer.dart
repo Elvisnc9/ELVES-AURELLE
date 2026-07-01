@@ -10,6 +10,6 @@ class Home_shimmer extends StatefulWidget {
 class _Home_shimmerState extends State<Home_shimmer> {
   @override
   Widget build(BuildContext context) {
-    return const Scaffold();
+    return Scaffold();
   }
 }
