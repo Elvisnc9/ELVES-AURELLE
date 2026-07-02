@@ -1,4 +1,5 @@
 import 'package:aurelle_flutter/core/navigation/shell_item.dart';
+import 'package:aurelle_flutter/core/theme/app_color.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:the_responsive_builder/the_responsive_builder.dart';
@@ -64,8 +65,11 @@ class _AppShellState extends State<AppShell> {
   Widget build(BuildContext context) {
     final selectedIndex = _selectedIndex(context);
     final theme = Theme.of(context);
-
+    final location = GoRouterState.of(context).uri.toString();
+    final isReels = location.startsWith('/reels');
     return Scaffold(
+
+      extendBody: true,
       backgroundColor: theme.scaffoldBackgroundColor,
       
       // ── Body ──────────────────────────────────────────────────────────────
@@ -102,6 +106,7 @@ class _AurelleBottomNav extends StatelessWidget {
 
   final int selectedIndex;
   final ValueChanged<int> onTap;
+  final bool isReels = false;
 
   @override
   Widget build(BuildContext context) {
@@ -116,14 +121,14 @@ class _AurelleBottomNav extends StatelessWidget {
       onDestinationSelected: onTap,
       // Luxury-app feel: no elevation, tight label style
       elevation: 0,
-      backgroundColor: theme.scaffoldBackgroundColor,
+      backgroundColor: Colors.transparent,
       indicatorColor: Colors.transparent,
       labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
       destinations: shellNavItems.map((item) {
         // ignore: unused_local_variable
         final isSelected = shellNavItems.indexOf(item) == selectedIndex;
         return NavigationDestination(
-          icon: Image.asset(item.icon, height: isSelected? 3.h : 2.5.h,    ),
+          icon: Image.asset(item.icon, height: isSelected? 3.h : 2.5.h, color: isReels? AppColors.lightBackground : null, ),
           label: item.label,
           tooltip: item.label,
         );

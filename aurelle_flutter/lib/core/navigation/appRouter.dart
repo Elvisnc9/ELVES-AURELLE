@@ -11,6 +11,7 @@ import 'package:aurelle_flutter/features/screens/oder.dart';
 import 'package:aurelle_flutter/features/screens/onboarding.dart';
 import 'package:aurelle_flutter/features/screens/product.dart';
 import 'package:aurelle_flutter/features/screens/profile.dart';
+import 'package:aurelle_flutter/features/screens/reelScreen.dart';
 import 'package:aurelle_flutter/features/screens/setting.dart';
 import 'package:aurelle_flutter/features/screens/shop.dart';
 import 'package:aurelle_flutter/features/screens/splashScreen.dart';
@@ -27,8 +28,8 @@ final routerProvider = Provider<GoRouter>((ref) {
   // final auth = ref.watch(authStateProvider);
 
   return GoRouter(
-    initialLocation: AppRoutes.splash,
-    debugLogDiagnostics: true, // disable in prod
+    initialLocation: AppRoutes.home,
+    debugLogDiagnostics: false, // disable in prod
     // refreshListenable: GoRouterRefreshStream(auth.stream),
 
     // ── Global redirect ─────────────────────────────────────────────────────
@@ -106,6 +107,9 @@ final routerProvider = Provider<GoRouter>((ref) {
                 },
               ),
 
+
+
+
               // /shop/category/:categorySlug
               GoRoute(
                 path: AppRoutes.category,
@@ -128,6 +132,15 @@ final routerProvider = Provider<GoRouter>((ref) {
               child: const CartScreen(),
             ),
           ),
+
+
+                          GoRoute(
+    path: AppRoutes.reels,
+    pageBuilder: (context, state) => NoTransitionPage(
+      key: state.pageKey,
+      child: const ReelsScreen(),
+    ),
+  ),
 
           // ── Profile (with nested routes) ──────────────────────────────
           GoRoute(

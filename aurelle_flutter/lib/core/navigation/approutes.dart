@@ -12,6 +12,7 @@ abstract class AppRoutes {
   static const String shop = '/shop';
   static const String cart = '/cart';
   static const String profile = '/profile';
+  static const String reels = '/reels';
 
   // ── Nested: Shop ─────────────────────────────────────────────────────────
   static const String productDetail = 'product/:productId'; // relative

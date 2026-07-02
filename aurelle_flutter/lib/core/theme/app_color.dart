@@ -25,4 +25,12 @@ class AppColors {
   static const Color productPlaceholder = Color(0xFFF2F2F2);
 
   static const Color error = Color(0xFFD32F2F);
+
+
+  static const Color reelsCardBackground = Color(0xFFF5EDE8);
+  static const Color reelsSizeSelected = Color(0xFF0A0A0A);
+  static const Color reelsSizeBorder = Color(0xFFD8D0CB);
+  static const Color reelsSoldOut = Color(0xFFCCCCCC);
+ 
+ 
 }

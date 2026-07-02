@@ -32,6 +32,12 @@ const List<ShellNavItem> shellNavItems = [
     activeIcon: Icons.grid_view,
     rootPath: AppRoutes.shop,
   ),
+    ShellNavItem(
+    label: 'Reels',
+    icon: 'assets/icon/reel.png',
+    activeIcon: Icons.video_library,
+    rootPath: AppRoutes.reels,
+  ),
   ShellNavItem(
     label: 'Cart',
     icon: 'assets/icon/parcel.png',

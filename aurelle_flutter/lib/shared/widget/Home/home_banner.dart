@@ -1,12 +1,20 @@
 /// ─────────────────────────────────────────────────────────────────────────────
 /// hero_banner.dart
-/// Full-bleed black hero banner with editorial headline + subline.
-/// Height is ~45% of screen height, matching SSENSE's proportions.
 ///
-/// Media priority: videoUrl > imageUrl > pure black.
-/// Video plays autostart, muted, looped, and pauses when scrolled out of
-/// view or when the app is backgrounded. First-load has no placeholder —
-/// the container is black by default, so a delayed video is invisible.
+/// Fixes applied vs previous version:
+///
+/// BUG 1 — "VideoPlayerController used after dispose"
+///   Root cause: _controller was assigned BEFORE initialize() resolved.
+///   If dispose() ran during that async gap, _controller.dispose() was called,
+///   but the .then() callback still fired on the dead controller.
+///
+///   Fix: local-ref pattern — controller is only assigned to _controller
+///   AFTER initialize() succeeds AND _disposed/mounted are confirmed clean.
+///   Every await is followed by a _disposed/mounted guard before proceeding.
+///
+/// BUG 2 — ShaderMask / ColorFiltered bleed (previous session)
+///   Fix retained: Stack overlay Container instead of ColorFiltered.
+///   ClipRect wraps the entire Stack as a hard guarantee.
 /// ─────────────────────────────────────────────────────────────────────────────
 
 import 'package:aurelle_flutter/core/theme/app_color.dart';
@@ -28,6 +36,11 @@ class HeroBanner extends StatefulWidget {
 }
 
 class _HeroBannerState extends State<HeroBanner> with WidgetsBindingObserver {
+  // ── State ──────────────────────────────────────────────────────────────────
+
+  /// Null until the controller has fully initialized AND the widget is
+  /// confirmed alive. Never read from inside the init future chain — use
+  /// local variables there instead.
   VideoPlayerController? _controller;
 
   bool _disposed = false;
@@ -36,45 +49,69 @@ class _HeroBannerState extends State<HeroBanner> with WidgetsBindingObserver {
 
   static const _visibilityKey = ValueKey('hero_banner_video');
 
+  // ── Lifecycle ──────────────────────────────────────────────────────────────
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-
     final url = widget.banner.videoUrl;
-    if (url.isNotEmpty) {
-      _initController(url);
+    if (url.isNotEmpty) _initController(url);
+  }
+
+  /// Async init using local-ref pattern.
+  ///
+  /// Pattern rule: NEVER touch [_controller] or any widget state inside this
+  /// method until AFTER every await has passed a _disposed + mounted check.
+  Future<void> _initController(String assetPath) async {
+    // Step 1 — create locally, do NOT assign to _controller yet
+    final controller = VideoPlayerController.asset(assetPath);
+
+    // Step 2 — initialize (may take a few hundred ms)
+    try {
+      await controller.initialize();
+    } catch (_) {
+      // Init failed — discard silently, banner shows black base
+      await controller.dispose();
+      return;
     }
-  }
 
-  void _initController(String url) {
-    final controller = VideoPlayerController.asset('aurelle_flutter/assets/anim/Asos-women_Video.mp4');
+    // Step 3 — guard: widget may have been disposed during initialize()
+    if (_disposed || !mounted) {
+      await controller.dispose();
+      return;
+    }
+
+    // Step 4 — configure (still using local ref)
+    await controller.setLooping(true);
+    await controller.setVolume(0);
+
+    // Step 5 — final guard after the two awaits above
+    if (_disposed || !mounted) {
+      await controller.dispose();
+      return;
+    }
+
+    // Step 6 — safe to assign; widget is alive, controller is fully ready
     _controller = controller;
-
-    controller.initialize().then((_) {
-      // Guard: widget may have been disposed while this future was pending.
-      if (_disposed) {
-        controller.dispose();
-        return;
-      }
-      controller.setLooping(true);
-      controller.setVolume(0);
-      if (mounted) setState(() {}); // paint first frame
-      _syncPlayback();
-    }).catchError((_) {
-      // Swallow — falls back to black container, no error UI per design.
-    });
+    setState(() {});   // trigger first frame paint
+    _syncPlayback();   // start playing if conditions are met
   }
 
+  // ── Playback sync ──────────────────────────────────────────────────────────
+
+  /// Single source of truth for play/pause decisions.
+  /// Called on: init complete, visibility change, app lifecycle change.
   void _syncPlayback() {
-    final controller = _controller;
-    if (controller == null || !controller.value.isInitialized) return;
+    if (_disposed) return;                              // guard: widget dead
+    final c = _controller;
+    if (c == null || !c.value.isInitialized) return;   // guard: not ready
 
     final shouldPlay = _isVisible && _isAppForeground;
-    if (shouldPlay && !controller.value.isPlaying) {
-      controller.play();
-    } else if (!shouldPlay && controller.value.isPlaying) {
-      controller.pause();
+    if (shouldPlay && !c.value.isPlaying) {
+      c.play();
+    } else if (!shouldPlay && c.value.isPlaying) {
+      c.pause();
     }
   }
 
@@ -85,21 +122,21 @@ class _HeroBannerState extends State<HeroBanner> with WidgetsBindingObserver {
   }
 
   void _onVisibilityChanged(VisibilityInfo info) {
-    // Threshold: play once >20% visible, pause once it drops below.
     final visible = info.visibleFraction > 0.2;
-    if (visible != _isVisible) {
-      _isVisible = visible;
-      _syncPlayback();
-    }
+    if (visible == _isVisible) return;
+    _isVisible = visible;
+    _syncPlayback();
   }
 
   @override
   void dispose() {
-    _disposed = true;
-    WidgetsBinding.instance.removeObserver(this);
-    _controller?.dispose();
+    _disposed = true;                              // flip first — blocks any
+    WidgetsBinding.instance.removeObserver(this); // in-flight callback from
+    _controller?.dispose();                        // touching widget state
     super.dispose();
   }
+
+  // ── Build ──────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -113,72 +150,97 @@ class _HeroBannerState extends State<HeroBanner> with WidgetsBindingObserver {
       child: SizedBox(
         width: double.infinity,
         height: 45.h,
-        child: Stack(
-          children: [
-            // ── Background ───────────────────────────────────────────────
-            Positioned.fill(
-              child: videoReady
-                  ? ColorFiltered(
-                      colorFilter: ColorFilter.mode(
-                        // ignore: deprecated_member_use
-                        Colors.black.withOpacity(0.55),
-                        BlendMode.darken,
+        child: ClipRect(                // hard clip — nothing leaks out
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+
+              // ── 1. Black base — always present, zero GPU cost ────────────
+              const ColoredBox(color: AppColors.black),
+
+              // ── 2. Video ─────────────────────────────────────────────────
+              if (videoReady)
+                FittedBox(
+                  fit: BoxFit.cover,
+                  clipBehavior: Clip.hardEdge,
+                  child: SizedBox(
+                    width: controller.value.size.width,
+                    height: controller.value.size.height,
+                    child: VideoPlayer(controller),
+                  ),
+                ),
+
+              // ── 3. Dark overlay (replaces ColorFiltered — no bleed) ──────
+              if (videoReady)
+                const DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: Color(0x73000000), // ~45% black, no withOpacity()
+                  ),
+                ),
+
+              // ── 4. Bottom gradient — text legibility only ────────────────
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                height: 45.h * 0.45,
+                child: const DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [Colors.transparent, Color(0xB3000000)],
+                      // 0xB3 = ~70% black
+                    ),
+                  ),
+                ),
+              ),
+
+              // ── 5. Text — always on top, always readable ─────────────────
+              Positioned(
+                left: 4.w,
+                right: 4.w,
+                bottom: 3.h,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      banner.subline,
+                      style: GoogleFonts.inter(
+                        fontSize: 10.sp,
+                        fontWeight: FontWeight.w500,
+                        letterSpacing: 2.4,
+                        color: const Color(0xA6FAFAFA), // AppColors.white @ 65%
                       ),
-                      child: FittedBox(
-                        fit: BoxFit.cover,
-                        child: SizedBox(
-                          width: controller.value.size.width,
-                          height: controller.value.size.height,
-                          child: VideoPlayer(controller),
-                        ),
+                    ).animate().fadeIn(delay: 100.ms, duration: 500.ms),
+
+                    SizedBox(height: 0.8.h),
+
+                    Text(
+                      banner.headline,
+                      style: GoogleFonts.inter(
+                        fontSize: 36.sp,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.5,
+                        height: 1.05,
+                        color: AppColors.white,
                       ),
                     )
-                  : (const ColoredBox(color: AppColors.black)),
-            ),
-
-            // ── Text — bottom-left, SSENSE style ────────────────────────
-            Positioned(
-              left: 4.w,
-              bottom: 3.h,
-              right: 4.w,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    banner.subline,
-                    style: GoogleFonts.inter(
-                      fontSize: 10.sp,
-                      fontWeight: FontWeight.w500,
-                      letterSpacing: 2.4,
-                      color: AppColors.white.withOpacity(0.65),
-                    ),
-                  ).animate().fadeIn(delay: 100.ms, duration: 500.ms),
-
-                  SizedBox(height: 0.8.h),
-
-                  Text(
-                    banner.headline,
-                    style: GoogleFonts.inter(
-                      fontSize: 36.sp,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: -0.5,
-                      height: 1.05,
-                      color: AppColors.white,
-                    ),
-                  )
-                      .animate()
-                      .fadeIn(delay: 180.ms, duration: 500.ms)
-                      .slideY(
-                        begin: 0.15,
-                        end: 0,
-                        duration: 450.ms,
-                        curve: Curves.easeOutCubic,
-                      ),
-                ],
+                        .animate()
+                        .fadeIn(delay: 180.ms, duration: 500.ms)
+                        .slideY(
+                          begin: 0.15,
+                          end: 0,
+                          duration: 450.ms,
+                          curve: Curves.easeOutCubic,
+                        ),
+                  ],
+                ),
               ),
-            ),
-          ],
+
+            ],
+          ),
         ),
       ),
     );
