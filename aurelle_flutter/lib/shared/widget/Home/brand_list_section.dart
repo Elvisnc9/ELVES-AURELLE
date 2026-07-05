@@ -1,8 +1,12 @@
 /// ─────────────────────────────────────────────────────────────────────────────
 /// brand_list_section.dart
-/// The stacked brand-name block below the hero banner.
-/// Each brand is a full-width tappable row of large black Inter text,
-/// exactly as SSENSE renders it.
+/// UI touch vs previous version:
+///   • 28.sp → 26.dp — sp scales with the user's system font size accessibility
+///     setting, which can make brand names overflow at large text sizes. dp uses
+///     the logarithmic screen-density formula from the_responsive_builder and
+///     stays visually consistent regardless of system font preference.
+///     This matches how all other text in the app is sized.
+///   • Everything else — layout, animation, divider — UNCHANGED
 /// ─────────────────────────────────────────────────────────────────────────────
 
 import 'package:aurelle_flutter/core/theme/app_color.dart';
@@ -54,7 +58,9 @@ class BrandListSection extends StatelessWidget {
                   child: Text(
                     brand,
                     style: GoogleFonts.inter(
-                      fontSize: 28.sp,
+                      // CHANGED: sp → dp so large system font settings don't
+                      // cause brand names to overflow or wrap unexpectedly.
+                      fontSize: 26.dp,
                       fontWeight: FontWeight.w800,
                       letterSpacing: -0.3,
                       height: 1.2,
@@ -85,9 +91,6 @@ class BrandListSection extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Internal hairline divider — matches SSENSE's subtle section separator
-// ─────────────────────────────────────────────────────────────────────────────
 class _Divider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {

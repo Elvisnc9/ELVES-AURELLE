@@ -1,125 +1,138 @@
 /// ─────────────────────────────────────────────────────────────────────────────
 /// reels_model.dart
-/// Data models for the Reels screen. Pure containers — zero logic.
+///
+/// ReelModel now carries ALL data needed to populate ProductDetailScreen.
+/// When user swipes left from a reel, the horizontal PageView shows
+/// ProductDetailScreen — driven entirely by ReelModel fields converted
+/// to ProductDetailState via reelToProductDetailState().
+///
+/// No new screen. ProductDetailScreen is reused as-is.
 /// ─────────────────────────────────────────────────────────────────────────────
 
+import 'package:aurelle_flutter/features/model/shop_model.dart';
 import 'package:flutter/material.dart';
 
-/// A single size option on the product card
-class ReelSizeOption {
-  const ReelSizeOption({
-    required this.label,
-    this.isSoldOut = false,
-  });
+// ── Size option ───────────────────────────────────────────────────────────────
 
+class ReelSizeOption {
+  const ReelSizeOption({required this.label, this.isSoldOut = false});
   final String label;
   final bool isSoldOut;
 }
 
-/// A single colour swatch on the product card
-class ReelColorOption {
-  const ReelColorOption({
-    required this.id,
-    required this.color,
-  });
+// ── Color option ──────────────────────────────────────────────────────────────
 
+class ReelColorOption {
+  const ReelColorOption({required this.id, required this.color});
   final String id;
   final Color color;
 }
 
-/// The product card data attached to a reel
-class ReelProductModel {
-  const ReelProductModel({
+// ── Product variant (for the thumbnail strip in ProductDetailScreen) ──────────
+
+class ReelProductVariant {
+  const ReelProductVariant({
     required this.id,
-    required this.name,
     required this.brand,
+    required this.productName,
     required this.price,
-    required this.sizes,
-    required this.colors,
-    this.description,
-    this.material,
-    this.length,
-    this.washingInstructions,
-    this.cardColor = const Color.fromARGB(255, 239, 104, 104), // white default; API sets per-product
+    required this.images,       // carousel images for this variant
+    this.originalPrice,
+    this.salePercent,
+    this.thumbnailUrl,
+    this.sizes = const [],
+    this.colors = const [],
+    this.itemCode,
+    this.itemInfo,
+    this.supplierColor,
   });
 
   final String id;
-  final String name;
   final String brand;
+  final String productName;
   final double price;
+  final double? originalPrice;
+  final int? salePercent;
+  final List<String> images;
+  final String? thumbnailUrl;
   final List<ReelSizeOption> sizes;
   final List<ReelColorOption> colors;
-  final String? description;
-  final String? material;
-  final String? length;
-  final String? washingInstructions;
-
-  /// Dominant colour extracted from the product image.
-  /// Defaults to white — will be set dynamically from the API/cloud
-  /// (e.g. palette extraction from the product photo) so the card
-  /// background matches the product's aesthetic.
-  final Color cardColor;
+  final String? itemCode;
+  final String? itemInfo;
+  final String? supplierColor;
 }
 
-/// A single reel (video + associated product)
+// ── Main ReelModel ────────────────────────────────────────────────────────────
+
 class ReelModel {
   const ReelModel({
     required this.id,
-    required this.product,
+    required this.variants,         // index 0 = primary product shown on reel
     this.videoAsset,
     this.videoUrl,
-    this.thumbnailUrl,
     this.likes = 0,
-    this.comments = 0,
+    this.salesCount = 0,
+    this.rating = 0.0,
+    this.reviewCount = 0,
     this.isLiked = false,
     this.isSaved = false,
-  });
+  }) : assert(variants.length > 0, 'ReelModel must have at least one variant');
 
   final String id;
-  final ReelProductModel product;
-  final String? videoAsset;   // local asset path
-  final String? videoUrl;     // remote URL (used when backend is ready)
-  final String? thumbnailUrl;
+
+  /// variants[0] is the primary product shown on the reel card.
+  /// All variants populate the thumbnail strip in ProductDetailScreen.
+  final List<ReelProductVariant> variants;
+
+  // Video
+  final String? videoAsset;
+  final String? videoUrl;
+
+  // Social proof — shown on the minimal reel card
   final int likes;
-  final int comments;
+  final int salesCount;
+  final double rating;
+  final int reviewCount;
+
+  // User interaction state
   final bool isLiked;
   final bool isSaved;
+
+  /// Convenience getter — the primary variant
+  ReelProductVariant get primaryVariant => variants.first;
 
   ReelModel copyWith({
     bool? isLiked,
     bool? isSaved,
     int? likes,
-    int? comments,
   }) {
     return ReelModel(
       id: id,
-      product: product,
+      variants: variants,
       videoAsset: videoAsset,
       videoUrl: videoUrl,
-      thumbnailUrl: thumbnailUrl,
       likes: likes ?? this.likes,
-      comments: comments ?? this.comments,
+      salesCount: salesCount,
+      rating: rating,
+      reviewCount: reviewCount,
       isLiked: isLiked ?? this.isLiked,
       isSaved: isSaved ?? this.isSaved,
     );
   }
 }
 
-/// Root state for the Reels screen
+// ── Reels screen state ────────────────────────────────────────────────────────
+
 class ReelsState {
   const ReelsState({
     required this.reels,
     this.currentIndex = 0,
-    this.selectedSizeIndex = 0,
-    this.selectedColorIndex = 0,
     this.cardVisible = true,
     this.isLoading = false,
   });
 
   final List<ReelModel> reels;
   final int currentIndex;
-  final int selectedSizeIndex;
-  final int selectedColorIndex;
   final bool cardVisible;
   final bool isLoading;
 
@@ -129,18 +142,35 @@ class ReelsState {
   ReelsState copyWith({
     List<ReelModel>? reels,
     int? currentIndex,
-    int? selectedSizeIndex,
-    int? selectedColorIndex,
     bool? cardVisible,
     bool? isLoading,
   }) {
     return ReelsState(
       reels: reels ?? this.reels,
       currentIndex: currentIndex ?? this.currentIndex,
-      selectedSizeIndex: selectedSizeIndex ?? this.selectedSizeIndex,
-      selectedColorIndex: selectedColorIndex ?? this.selectedColorIndex,
       cardVisible: cardVisible ?? this.cardVisible,
       isLoading: isLoading ?? this.isLoading,
     );
   }
+}
+
+// ── Adapter: ReelProductVariant → ProductVariant (for ProductDetailScreen) ────
+
+/// Converts a ReelProductVariant into the ProductVariant model that
+/// ProductDetailScreen already knows how to render.
+/// This is the bridge — no new screen needed.
+ProductVariant reelVariantToProductVariant(ReelProductVariant v) {
+  return ProductVariant(
+    id: v.id,
+    brand: v.brand,
+    productName: v.productName,
+    price: v.price,
+    originalPrice: v.originalPrice,
+    salePercent: v.salePercent,
+    images: v.images,
+    thumbnailUrl: v.thumbnailUrl,
+    itemCode: v.itemCode,
+    itemInfo: v.itemInfo,
+    supplierColor: v.supplierColor,
+  );
 }

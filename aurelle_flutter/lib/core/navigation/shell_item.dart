@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 class ShellNavItem {
   final String label;
   final String icon;
-  final IconData activeIcon;
+  final String activeIcon;
   final String rootPath; // the tab's root route path
 
   const ShellNavItem({
@@ -23,31 +23,26 @@ const List<ShellNavItem> shellNavItems = [
   ShellNavItem(
     label: 'Home',
     icon: 'assets/icon/home.png',
-    activeIcon: Icons.home,
+    activeIcon: 'assets/icon/home_filled.png',
     rootPath: AppRoutes.home,
   ),
   ShellNavItem(
     label: 'Shop',
     icon: 'assets/icon/shopping-cart.png',
-    activeIcon: Icons.grid_view,
+    activeIcon: 'assets/icon/shopping-cart_filled.png',
     rootPath: AppRoutes.shop,
   ),
     ShellNavItem(
     label: 'Reels',
     icon: 'assets/icon/reel.png',
-    activeIcon: Icons.video_library,
+    activeIcon: 'assets/icon/reel_filled.png',
     rootPath: AppRoutes.reels,
   ),
-  ShellNavItem(
-    label: 'Cart',
-    icon: 'assets/icon/parcel.png',
-    activeIcon: Icons.shopping_bag,
-    rootPath: AppRoutes.cart,
-  ),
+
   ShellNavItem(
     label: 'Profile',
     icon: 'assets/icon/user.png',
-    activeIcon: Icons.person,
+    activeIcon: 'assets/icon/user_filled.png',
     rootPath: AppRoutes.profile,
   ),
 ];

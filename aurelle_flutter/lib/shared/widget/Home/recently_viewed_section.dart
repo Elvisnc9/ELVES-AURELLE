@@ -6,8 +6,8 @@
 /// ─────────────────────────────────────────────────────────────────────────────
 
 import 'package:aurelle_flutter/features/model/home_model.dart';
-import 'package:aurelle_flutter/shared/widget/home/product_card.dart';
 import 'package:aurelle_flutter/shared/widget/home/section_header.dart';
+import 'package:aurelle_flutter/shared/widget/Product/product_card.dart';
 import 'package:flutter/material.dart';
 import 'package:the_responsive_builder/the_responsive_builder.dart';
 
@@ -29,14 +29,13 @@ class RecentlyViewedSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SectionHeader(
-          number: '${products.length.toString().padLeft(3, '0')}',
-          label: 'RECENTLY VIEWED',
+          label: 'RECENTLY VIEWED', number: '',
         ),
 
         SizedBox(height: 1.h),
 
         SizedBox(
-          height: 52.h,
+          height: 40.h,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             padding: EdgeInsets.symmetric(horizontal: 4.w),
@@ -50,7 +49,7 @@ class RecentlyViewedSection extends StatelessWidget {
           ),
         ),
 
-        SizedBox(height: 2.5.h),
+       
       ],
     );
   }

@@ -1,5 +1,4 @@
 import 'package:aurelle_flutter/core/navigation/shell_item.dart';
-import 'package:aurelle_flutter/core/theme/app_color.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:the_responsive_builder/the_responsive_builder.dart';
@@ -87,6 +86,7 @@ class _AppShellState extends State<AppShell> {
       bottomNavigationBar: _AurelleBottomNav(
         selectedIndex: selectedIndex,
         onTap: (i) => _onTap(context, i),
+         isReels: isReels,
       ),
     );
   }
@@ -101,12 +101,12 @@ class _AppShellState extends State<AppShell> {
 class _AurelleBottomNav extends StatelessWidget {
   const _AurelleBottomNav({
     required this.selectedIndex,
-    required this.onTap,
+    required this.onTap, required this.isReels,
   });
 
   final int selectedIndex;
   final ValueChanged<int> onTap;
-  final bool isReels = false;
+  final bool isReels;
 
   @override
   Widget build(BuildContext context) {
@@ -119,16 +119,27 @@ class _AurelleBottomNav extends StatelessWidget {
     return NavigationBar(
       selectedIndex: selectedIndex,
       onDestinationSelected: onTap,
+      height: 8.h,
       // Luxury-app feel: no elevation, tight label style
       elevation: 0,
-      backgroundColor: Colors.transparent,
+      backgroundColor: isReels ? Colors.transparent : Colors.white.withOpacity(0.5),
       indicatorColor: Colors.transparent,
       labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+      labelTextStyle: WidgetStatePropertyAll(theme.textTheme.labelMedium?.copyWith(
+      
+       fontWeight: FontWeight.bold,
+       color: isReels? Colors.white : Colors.black
+   
+      )),
       destinations: shellNavItems.map((item) {
         // ignore: unused_local_variable
         final isSelected = shellNavItems.indexOf(item) == selectedIndex;
         return NavigationDestination(
-          icon: Image.asset(item.icon, height: isSelected? 3.h : 2.5.h, color: isReels? AppColors.lightBackground : null, ),
+          icon: Image.asset(item.icon, height: isSelected? 3.8.h : 2.8.h, color: isReels? Colors.white : Colors.black
+            ),
+
+          selectedIcon: Image.asset(item.activeIcon, 
+          height: 3.8.h, color: isReels? Colors.white : null),
           label: item.label,
           tooltip: item.label,
         );

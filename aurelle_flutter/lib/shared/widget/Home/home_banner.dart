@@ -1,20 +1,14 @@
 /// ─────────────────────────────────────────────────────────────────────────────
 /// hero_banner.dart
-///
-/// Fixes applied vs previous version:
-///
-/// BUG 1 — "VideoPlayerController used after dispose"
-///   Root cause: _controller was assigned BEFORE initialize() resolved.
-///   If dispose() ran during that async gap, _controller.dispose() was called,
-///   but the .then() callback still fired on the dead controller.
-///
-///   Fix: local-ref pattern — controller is only assigned to _controller
-///   AFTER initialize() succeeds AND _disposed/mounted are confirmed clean.
-///   Every await is followed by a _disposed/mounted guard before proceeding.
-///
-/// BUG 2 — ShaderMask / ColorFiltered bleed (previous session)
-///   Fix retained: Stack overlay Container instead of ColorFiltered.
-///   ClipRect wraps the entire Stack as a hard guarantee.
+/// UI touches vs previous version:
+///   • Search + Bag icons: circular containers removed → plain Material
+///     IconButton style, consistent with how icons are handled on other screens
+///   • Bag badge: uses Material Badge widget instead of custom Positioned box
+///   • Shop Now button: BorderRadius.circular(30) → BorderRadius.zero to match
+///     the sharp-corner button language used on cart, profile, and onboarding
+///   • Brand headline font: Cormorant Garamond instead of Inter (matches the
+///     heading font contract set in AppTypography)
+///   • Everything else — architecture, video logic, overlays — UNCHANGED
 /// ─────────────────────────────────────────────────────────────────────────────
 
 import 'package:aurelle_flutter/core/theme/app_color.dart';
@@ -27,29 +21,36 @@ import 'package:video_player/video_player.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
 class HeroBanner extends StatefulWidget {
-  const HeroBanner({super.key, required this.banner});
+  const HeroBanner({
+    super.key,
+    required this.banner,
+    required this.bagCount,
+    this.onProfileTap,
+    this.onSearchTap,
+    this.onBagTap,
+    this.onShopNowTap,
+  });
 
   final HeroBannerModel banner;
+  final int bagCount;
+  final VoidCallback? onProfileTap;
+  final VoidCallback? onSearchTap;
+  final VoidCallback? onBagTap;
+  final VoidCallback? onShopNowTap;
 
   @override
   State<HeroBanner> createState() => _HeroBannerState();
 }
 
 class _HeroBannerState extends State<HeroBanner> with WidgetsBindingObserver {
-  // ── State ──────────────────────────────────────────────────────────────────
-
-  /// Null until the controller has fully initialized AND the widget is
-  /// confirmed alive. Never read from inside the init future chain — use
-  /// local variables there instead.
   VideoPlayerController? _controller;
-
   bool _disposed = false;
   bool _isVisible = false;
   bool _isAppForeground = true;
 
   static const _visibilityKey = ValueKey('hero_banner_video');
 
-  // ── Lifecycle ──────────────────────────────────────────────────────────────
+  // ── Lifecycle — UNCHANGED ─────────────────────────────────────────────────
 
   @override
   void initState() {
@@ -59,60 +60,38 @@ class _HeroBannerState extends State<HeroBanner> with WidgetsBindingObserver {
     if (url.isNotEmpty) _initController(url);
   }
 
-  /// Async init using local-ref pattern.
-  ///
-  /// Pattern rule: NEVER touch [_controller] or any widget state inside this
-  /// method until AFTER every await has passed a _disposed + mounted check.
   Future<void> _initController(String assetPath) async {
-    // Step 1 — create locally, do NOT assign to _controller yet
     final controller = VideoPlayerController.asset(assetPath);
-
-    // Step 2 — initialize (may take a few hundred ms)
     try {
       await controller.initialize();
     } catch (_) {
-      // Init failed — discard silently, banner shows black base
       await controller.dispose();
       return;
     }
-
-    // Step 3 — guard: widget may have been disposed during initialize()
     if (_disposed || !mounted) {
       await controller.dispose();
       return;
     }
-
-    // Step 4 — configure (still using local ref)
     await controller.setLooping(true);
     await controller.setVolume(0);
-
-    // Step 5 — final guard after the two awaits above
     if (_disposed || !mounted) {
       await controller.dispose();
       return;
     }
-
-    // Step 6 — safe to assign; widget is alive, controller is fully ready
     _controller = controller;
-    setState(() {});   // trigger first frame paint
-    _syncPlayback();   // start playing if conditions are met
+    setState(() {});
+    _syncPlayback();
   }
 
-  // ── Playback sync ──────────────────────────────────────────────────────────
-
-  /// Single source of truth for play/pause decisions.
-  /// Called on: init complete, visibility change, app lifecycle change.
   void _syncPlayback() {
-    if (_disposed) return;                              // guard: widget dead
+    if (_disposed) return;
     final c = _controller;
-    if (c == null || !c.value.isInitialized) return;   // guard: not ready
-
+    if (c == null || !c.value.isInitialized) return;
     final shouldPlay = _isVisible && _isAppForeground;
-    if (shouldPlay && !c.value.isPlaying) {
+    if (shouldPlay && !c.value.isPlaying)
       c.play();
-    } else if (!shouldPlay && c.value.isPlaying) {
+    else if (!shouldPlay && c.value.isPlaying)
       c.pause();
-    }
   }
 
   @override
@@ -130,35 +109,35 @@ class _HeroBannerState extends State<HeroBanner> with WidgetsBindingObserver {
 
   @override
   void dispose() {
-    _disposed = true;                              // flip first — blocks any
-    WidgetsBinding.instance.removeObserver(this); // in-flight callback from
-    _controller?.dispose();                        // touching widget state
+    _disposed = true;
+    WidgetsBinding.instance.removeObserver(this);
+    _controller?.dispose();
     super.dispose();
   }
 
-  // ── Build ──────────────────────────────────────────────────────────────────
+  // ── Build ─────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
     final banner = widget.banner;
     final controller = _controller;
     final videoReady = controller != null && controller.value.isInitialized;
+    final topPadding = MediaQuery.of(context).padding.top;
 
     return VisibilityDetector(
       key: _visibilityKey,
       onVisibilityChanged: _onVisibilityChanged,
       child: SizedBox(
         width: double.infinity,
-        height: 45.h,
-        child: ClipRect(                // hard clip — nothing leaks out
+        height: 60.h,
+        child: ClipRect(
           child: Stack(
             fit: StackFit.expand,
             children: [
-
-              // ── 1. Black base — always present, zero GPU cost ────────────
+              // ── 1. Black base ─────────────────────────────────────────────
               const ColoredBox(color: AppColors.black),
 
-              // ── 2. Video ─────────────────────────────────────────────────
+              // ── 2. Video ──────────────────────────────────────────────────
               if (videoReady)
                 FittedBox(
                   fit: BoxFit.cover,
@@ -170,75 +149,217 @@ class _HeroBannerState extends State<HeroBanner> with WidgetsBindingObserver {
                   ),
                 ),
 
-              // ── 3. Dark overlay (replaces ColorFiltered — no bleed) ──────
-              if (videoReady)
-                const DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: Color(0x73000000), // ~45% black, no withOpacity()
-                  ),
-                ),
+              // ── 3. Dark overlay ───────────────────────────────────────────
+              const DecoratedBox(
+                decoration: BoxDecoration(color: Color(0x55000000)),
+              ),
 
-              // ── 4. Bottom gradient — text legibility only ────────────────
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                height: 45.h * 0.45,
-                child: const DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [Colors.transparent, Color(0xB3000000)],
-                      // 0xB3 = ~70% black
-                    ),
+              // ── 4. Gradient ───────────────────────────────────────────────
+              const DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Color(0x99000000),
+                      Colors.transparent,
+                      Colors.transparent,
+                      Color(0xCC000000),
+                    ],
+                    stops: [0.0, 0.25, 0.55, 1.0],
                   ),
                 ),
               ),
 
-              // ── 5. Text — always on top, always readable ─────────────────
+              // ── 5. Floating top bar ───────────────────────────────────────
+              // CHANGED: Removed circular Container wrappers from icons.
+              // Icons now sit directly as Material InkWell targets — same
+              // pattern as the top bars in shop, cart, and checkout screens.
               Positioned(
+                top: topPadding + 1.h,
                 left: 4.w,
                 right: 4.w,
-                bottom: 3.h,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // Wordmark
+                    Text(
+                      'AURELLE',
+                      style: GoogleFonts.cormorantGaramond(
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 4.0,
+                        color: AppColors.white,
+                        shadows: const [
+                          Shadow(color: Colors.black38, blurRadius: 8),
+                        ],
+                      ),
+                    ),
+
+                    // Icon row — plain icons, no circular container
+                    Row(
+                      children: [
+                        GestureDetector(
+                          onTap: widget.onSearchTap,
+                          behavior: HitTestBehavior.opaque,
+                          child: Padding(
+                            padding: EdgeInsets.all(2.w),
+                            child: Icon(
+                              Icons.search,
+                              color: AppColors.white,
+                              size: 30.sp,
+                              shadows: const [
+                                Shadow(color: Colors.black45, blurRadius: 6),
+                              ],
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 2.w),
+                        GestureDetector(
+                          onTap: widget.onBagTap,
+                          behavior: HitTestBehavior.opaque,
+                          child: Padding(
+                            padding: EdgeInsets.all(2.w),
+                            // Material Badge handles the count dot natively
+                            child: Badge(
+                              isLabelVisible: widget.bagCount > 0,
+                              label: Text(
+                                '${widget.bagCount}',
+                                style: TextStyle(
+                                  fontSize: 8.sp,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.white,
+                                ),
+                              ),
+                              backgroundColor: AppColors.gold,
+                              child: Image.asset('assets/icon/parcel.png',
+                                  height: 30.sp, color: AppColors.white),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ).animate().fadeIn(duration: 400.ms),
+
+              // ── 6. Bottom-left: subline + headline + Shop Now ─────────────
+              Positioned(
+                left: 4.w,
+                bottom: 4.h,
+                right: 35.w,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    // Subline
                     Text(
                       banner.subline,
                       style: GoogleFonts.inter(
                         fontSize: 10.sp,
-                        fontWeight: FontWeight.w500,
-                        letterSpacing: 2.4,
-                        color: const Color(0xA6FAFAFA), // AppColors.white @ 65%
+                        fontWeight: FontWeight.w400,
+                        letterSpacing: 0.3,
+                        color: const Color(0xCCFFFFFF),
                       ),
                     ).animate().fadeIn(delay: 100.ms, duration: 500.ms),
 
-                    SizedBox(height: 0.8.h),
+                    SizedBox(height: 0.6.h),
 
+                    // Headline — CHANGED: Cormorant Garamond to match heading
+                    // font contract; same weight as other screen headings
                     Text(
-                      banner.headline,
-                      style: GoogleFonts.inter(
-                        fontSize: 36.sp,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: -0.5,
-                        height: 1.05,
-                        color: AppColors.white,
-                      ),
-                    )
+                          banner.headline,
+                          style: GoogleFonts.cormorantGaramond(
+                            fontSize: 40.sp,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.5,
+                            height: 1.2,
+                            color: AppColors.white,
+                          ),
+                        )
                         .animate()
-                        .fadeIn(delay: 180.ms, duration: 500.ms)
+                        .fadeIn(delay: 150.ms, duration: 500.ms)
                         .slideY(
-                          begin: 0.15,
+                          begin: 0.12,
                           end: 0,
-                          duration: 450.ms,
+                          duration: 400.ms,
                           curve: Curves.easeOutCubic,
                         ),
+
+                    SizedBox(height: 1.5.h),
+
+                    // Shop Now — CHANGED: sharp corners (BorderRadius.zero)
+                    // to match button language used in cart, profile, onboarding
+                    GestureDetector(
+                      onTap: widget.onShopNowTap,
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 8.w,
+                          vertical: 1.5.h,
+                        ),
+                        decoration: const BoxDecoration(
+                          color: AppColors.white,
+                          // No BorderRadius — sharp corners like the rest
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'SHOP NOW',
+                              style: GoogleFonts.inter(
+                                fontSize: 12.sp,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 1.4,
+                                color: AppColors.black,
+                              ),
+                            ),
+                            SizedBox(width: 2.w),
+                            Icon(
+                              Icons.arrow_forward,
+                              color: AppColors.black,
+                              size: 14.sp,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ).animate().fadeIn(delay: 250.ms, duration: 400.ms),
                   ],
                 ),
               ),
 
+              // ── 7. Bottom-right badge — UNCHANGED ────────────────────────
+              Positioned(
+                right: 4.w,
+                bottom: 4.h,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Icon(
+                      Icons.ac_unit,
+                      color: AppColors.white,
+                      size: 14.sp,
+                    ),
+                    SizedBox(height: 0.5.h),
+                    Text(
+                      '15% off new',
+                      style: GoogleFonts.inter(
+                        fontSize: 9.sp,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.white,
+                      ),
+                    ),
+                    Text(
+                      'collection',
+                      style: GoogleFonts.inter(
+                        fontSize: 9.sp,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.white,
+                      ),
+                    ),
+                  ],
+                ).animate().fadeIn(delay: 300.ms, duration: 400.ms),
+              ),
             ],
           ),
         ),

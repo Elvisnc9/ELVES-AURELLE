@@ -7,7 +7,7 @@
 library;
 
 import 'package:aurelle_flutter/features/model/home_model.dart';
-import 'package:aurelle_flutter/shared/widget/home/product_card.dart';
+import 'package:aurelle_flutter/shared/widget/Product/product_card.dart';
 import 'package:aurelle_flutter/shared/widget/home/section_header.dart';
 import 'package:flutter/material.dart';
 import 'package:the_responsive_builder/the_responsive_builder.dart';

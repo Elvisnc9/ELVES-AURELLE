@@ -40,23 +40,22 @@ const _initialState = HomeState(
   bagCount: 1,
 
   heroBanner: HeroBannerModel(
-    headline: 'NEW ARRIVALS',
+    headline: 'SUMMER DEALS',
     subline: 'THE EDIT — SS25',
     videoUrl: 'assets/anim/Asos-women_Video.mp4',
   ),
 
   brandSection: HomeBrandSectionModel(
-    sectionNumber: '007',
     sectionLabel: 'NEW FROM',
     brands: [
+      'AURELLIAN',
+      'RICK OWENS',
+      'C.I.T.S',
       'MARINE SERRE',
       'VIVIENNE WESTWOOD',
       'GANNI',
-      'MM6 MAISON MARGIELA',
-      'OFF-WHITE',
-      'AMINA MUADDI',
       'PALM ANGELS',
-    ],
+    ], sectionNumber: '',
   ),
 
   recentlyViewed: [
@@ -92,7 +91,6 @@ const _initialState = HomeState(
 
   productSections: [
     HomeProductSectionModel(
-      sectionNumber: '040',
       sectionLabel: 'TRENDING NOW',
       useGrid: false,
       products: [
@@ -101,10 +99,9 @@ const _initialState = HomeState(
         HomeProductModel(id: 's1p3', brand: 'Marine Serre', price: 139, originalPrice: 235),
         HomeProductModel(id: 's1p4', brand: 'Palm Angels', price: 108, originalPrice: 130),
         HomeProductModel(id: 's1p5', brand: 'Ganni', price: 210),
-      ],
+      ], sectionNumber: '',
     ),
     HomeProductSectionModel(
-      sectionNumber: '040',
       sectionLabel: 'FOR YOU',
       useGrid: true,
       products: [
@@ -114,10 +111,9 @@ const _initialState = HomeState(
         HomeProductModel(id: 's2p4', brand: 'Marine Serre', price: 100, originalPrice: 205),
         HomeProductModel(id: 's2p5', brand: 'Off-White', price: 315),
         HomeProductModel(id: 's2p6', brand: 'Jacquemus', price: 420),
-      ],
+      ], sectionNumber: '',
     ),
     HomeProductSectionModel(
-      sectionNumber: '040',
       sectionLabel: 'EDITORS PICK',
       useGrid: false,
       products: [
@@ -125,7 +121,7 @@ const _initialState = HomeState(
         HomeProductModel(id: 's3p2', brand: 'Anine Bing', price: 125, originalPrice: 265),
         HomeProductModel(id: 's3p3', brand: 'Anine Bing', price: 103, originalPrice: 265),
         HomeProductModel(id: 's3p4', brand: 'Martine Rose', price: 344, originalPrice: 465),
-      ],
+      ], sectionNumber: '',
     ),
   ],
 );

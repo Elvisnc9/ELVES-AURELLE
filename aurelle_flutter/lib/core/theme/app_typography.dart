@@ -27,12 +27,19 @@ class AppTypography {
         fontSize: 14, fontWeight: FontWeight.w600, color: primaryColor,
       ),
 
+      labelMedium: GoogleFonts.inter(
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w600,
+                      
+                      ),
+
       titleSmall:  TextStyle(
                       fontSize: 12.sp,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 1.2,
                       color: AppColors.gold,
                     ),
+
 
 
                     titleMedium: GoogleFonts.cormorantGaramond(fontWeight: FontWeight.w900, fontSize: 30.sp, color: AppColors.black)

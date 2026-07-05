@@ -4,16 +4,17 @@ import 'package:aurelle_flutter/core/navigation/pageTransition.dart';
 import 'package:aurelle_flutter/features/screens/QA.dart';
 import 'package:aurelle_flutter/features/screens/authScreen/Login.dart';
 import 'package:aurelle_flutter/features/screens/authScreen/Signup.dart';
-import 'package:aurelle_flutter/features/screens/cart.dart';
+import 'package:aurelle_flutter/features/screens/cartScreen.dart';
 import 'package:aurelle_flutter/features/screens/category.dart';
 import 'package:aurelle_flutter/features/screens/homescreen.dart';
-import 'package:aurelle_flutter/features/screens/oder.dart';
+import 'package:aurelle_flutter/features/screens/checkOutScreen.dart';
 import 'package:aurelle_flutter/features/screens/onboarding.dart';
-import 'package:aurelle_flutter/features/screens/product.dart';
+import 'package:aurelle_flutter/features/screens/productScreen.dart';
 import 'package:aurelle_flutter/features/screens/profile.dart';
 import 'package:aurelle_flutter/features/screens/reelScreen.dart';
+import 'package:aurelle_flutter/features/screens/searchScreen.dart';
 import 'package:aurelle_flutter/features/screens/setting.dart';
-import 'package:aurelle_flutter/features/screens/shop.dart';
+import 'package:aurelle_flutter/features/screens/shopScreen.dart';
 import 'package:aurelle_flutter/features/screens/splashScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart' hide NoTransitionPage;
@@ -45,6 +46,8 @@ final routerProvider = Provider<GoRouter>((ref) {
     },
 
     routes: [
+
+
       // ── Splash ──────────────────────────────────────────────────────────
    GoRoute(
         path: AppRoutes.splash,
@@ -70,6 +73,32 @@ final routerProvider = Provider<GoRouter>((ref) {
         pageBuilder: (context, state) => SlideUpTransitionPage(
             key: state.pageKey, child: const SignUpScreen()),
       ),
+
+      GoRoute(
+  path: '/search',
+  pageBuilder: (context, state) => NoTransitionPage(
+    key: state.pageKey,
+    child: const SearchScreen(),
+  ),
+),
+
+
+GoRoute(
+  path: AppRoutes.checkout,
+  pageBuilder: (context, state) => SlideUpTransitionPage(
+    key: state.pageKey,
+    child: const CheckoutScreen(),
+  ),
+),
+
+   GoRoute(
+            path: AppRoutes.cart,
+            pageBuilder: (context, state) => NoTransitionPage(
+              key: state.pageKey,
+              child: const CartScreen(),
+            ),
+          ),
+
 
       // ── Shell (tabs) ────────────────────────────────────────────────────
       ShellRoute(
@@ -125,13 +154,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
 
           // ── Cart ──────────────────────────────────────────────────────
-          GoRoute(
-            path: AppRoutes.cart,
-            pageBuilder: (context, state) => NoTransitionPage(
-              key: state.pageKey,
-              child: const CartScreen(),
-            ),
-          ),
+       
 
 
                           GoRoute(
@@ -155,7 +178,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                 path: AppRoutes.orders,
                 pageBuilder: (context, state) => SlideRightTransitionPage(
                   key: state.pageKey,
-                  child: const OrderScreen(),
+                  child: const CheckoutScreen(),
                 ),
                 routes: [
                   // /profile/orders/:orderId

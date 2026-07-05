@@ -6,11 +6,14 @@ abstract class AppRoutes {
   static const String onboarding = '/onboarding';
   static const String login = '/login';
   static const String signup = '/signup';
+  static const String search = '/search';
+  static const String checkout = '/checkout'; 
+  static const String cart = '/cart';
 
   // ── Shell tabs (root paths) ───────────────────────────────────────────────
   static const String home = '/home';
   static const String shop = '/shop';
-  static const String cart = '/cart';
+
   static const String profile = '/profile';
   static const String reels = '/reels';
 

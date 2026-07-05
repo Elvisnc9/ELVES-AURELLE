@@ -1,49 +1,35 @@
 /// ─────────────────────────────────────────────────────────────────────────────
-/// reels_product_card.dart
-/// The always-visible product card overlaid on the reel video.
-/// Matches the uploaded screen exactly:
-///   • Warm blush/salmon card background (AppColors.reelsCardBackground)
-///   • Product name + price on same row (bold)
-///   • Brand name below in secondary colour
-///   • Description text, material, length, washing instructions
-///   • Size chips row — selected = black fill, sold out = greyed strike
-///   • Colour swatches row — active has black ring
-///   • Cart icon button (square) + Buy Now button (flex)
-///
-/// Zero logic — all state and callbacks come from the parent screen.
+/// reels_stats_card.dart
+/// Single minimal card sitting above the bottom nav bar.
+/// Contains: brand · name · price · likes · sales · rating · swipe hint.
+/// No sidebar. No bookmark. No TikTok-style action buttons.
 /// ─────────────────────────────────────────────────────────────────────────────
 
 import 'package:aurelle_flutter/core/theme/app_color.dart';
 import 'package:aurelle_flutter/features/model/reels_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:the_responsive_builder/the_responsive_builder.dart';
 
-class ReelsProductCard extends StatelessWidget {
-  const ReelsProductCard({
-    super.key,
-    required this.product,
-    required this.selectedSizeIndex,
-    required this.selectedColorIndex,
-    required this.onSizeSelected,
-    required this.onColorSelected,
-    required this.onAddToCart,
-    required this.onBuyNow,
-    required this.visible,
-  });
+class ReelsStatsCard extends StatelessWidget {
+  const ReelsStatsCard({super.key, required this.reel, required this.visible});
 
-  final ReelProductModel product;
-  final int selectedSizeIndex;
-  final int selectedColorIndex;
-  final ValueChanged<int> onSizeSelected;
-  final ValueChanged<int> onColorSelected;
-  final VoidCallback onAddToCart;
-  final VoidCallback onBuyNow;
+  final ReelModel reel;
   final bool visible;
+
+  String _formatCount(int count) {
+    if (count >= 1000) return '${(count / 1000).toStringAsFixed(1)}k';
+    return count.toString();
+  }
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final variant = reel.primaryVariant;
+
+    // Bottom nav bar height — card sits above it
+    final bottomNavHeight = kBottomNavigationBarHeight + 8;
 
     return AnimatedOpacity(
       duration: const Duration(milliseconds: 280),
@@ -51,341 +37,180 @@ class ReelsProductCard extends StatelessWidget {
       opacity: visible ? 1.0 : 0.0,
       child: IgnorePointer(
         ignoring: !visible,
-        child: Container(
-          margin: EdgeInsets.symmetric(horizontal: 3.w),
-          decoration: BoxDecoration(
-            color: product.cardColor.withOpacity(0.65),
-            borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(
+            3.w,
+            0,
+            3.w,
+            bottomNavHeight / MediaQuery.of(context).size.height * 100 + 1.5,
           ),
-          padding: EdgeInsets.fromLTRB(4.w, 2.h, 4.w, 2.h),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              // ── Left: brand, name, price, stats ─────────────────────
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Brand
+                    Text(
+                      variant.brand.toUpperCase(),
+                      style: GoogleFonts.cormorantGaramond(
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.gold,
+                      ),
+                    ),
 
-              // ── Row 1: Product name + price ────────────────────────────
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Text(
-                      product.name,
-                      style: textTheme.titleLarge?.copyWith(
-                        fontSize: 20.sp,
+                    SizedBox(height: 0.6.h),
+
+                    // Product name
+                    Text(
+                      variant.productName,
+                      style: GoogleFonts.cormorantGaramond(
+                        fontSize: 25.sp,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.lightTextPrimary,
-                        letterSpacing: 0.2,
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: 2.w),
-                  Text(
-                    '\$${product.price.toStringAsFixed(2)}',
-                    style: textTheme.titleLarge?.copyWith(
-                      fontSize: 18.sp,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.lightTextPrimary,
-                    ),
-                  ),
-                ],
-              ),
-
-              SizedBox(height: 0.4.h),
-
-              // ── Row 2: Brand name ──────────────────────────────────────
-              Text(
-                product.brand,
-                style: textTheme.bodyMedium?.copyWith(
-                  fontSize: 14.sp,
-                  color: AppColors.black,
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
-
-              SizedBox(height: 1.h),
-
-              // ── Description ────────────────────────────────────────────
-              if (product.description != null)
-                Text(
-                  product.description!,
-                  maxLines: 8,
-                  overflow: TextOverflow.ellipsis,
-                  style: textTheme.bodyMedium?.copyWith(
-                    fontSize: 14.sp,
-                    color: AppColors.lightBackground,
-                    height: 1.5,
-                  ),
-                ),
-
-              SizedBox(height: 2.5.h),
-
-              // ── Meta: material, length, washing ───────────────────────
-              if (product.material != null)
-                _MetaRow(label: 'Material:', value: product.material!),
-              if (product.length != null)
-                _MetaRow(label: 'Length:', value: product.length!),
-              if (product.washingInstructions != null)
-                _MetaRow(
-                    label: 'Washing instructions:',
-                    value: product.washingInstructions!),
-
-              SizedBox(height: 1.2.h),
-
-              // ── Size label ─────────────────────────────────────────────
-              Text(
-                'Size*',
-                style: textTheme.labelLarge?.copyWith(
-                  fontSize: 11.sp,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.lightTextPrimary,
-                ),
-              ),
-
-              SizedBox(height: 0.8.h),
-
-              // ── Size chips ─────────────────────────────────────────────
-              Row(
-                children: product.sizes.asMap().entries.map((e) {
-                  final i = e.key;
-                  final size = e.value;
-                  final isSelected = i == selectedSizeIndex && !size.isSoldOut;
-                  return Padding(
-                    padding: EdgeInsets.only(right: 1.5.w),
-                    child: _SizeChip(
-                      label: size.label,
-                      isSelected: isSelected,
-                      isSoldOut: size.isSoldOut,
-                      onTap: () => onSizeSelected(i),
-                    ),
-                  );
-                }).toList(),
-              ),
-
-              SizedBox(height: 1.2.h),
-
-              // ── Color label ────────────────────────────────────────────
-              Text(
-                'Color',
-                style: textTheme.labelLarge?.copyWith(
-                  fontSize: 11.sp,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.lightTextPrimary,
-                ),
-              ),
-
-              SizedBox(height: 0.8.h),
-
-              // ── Color swatches ─────────────────────────────────────────
-              Row(
-                children: product.colors.asMap().entries.map((e) {
-                  final i = e.key;
-                  final isSelected = i == selectedColorIndex;
-                  return Padding(
-                    padding: EdgeInsets.only(right: 2.w),
-                    child: _ColorSwatch(
-                      color: e.value.color,
-                      isSelected: isSelected,
-                      onTap: () => onColorSelected(i),
-                    ),
-                  );
-                }).toList(),
-              ),
-
-              SizedBox(height: 1.5.h),
-
-              // ── CTA row: cart + buy now ────────────────────────────────
-              Row(
-                children: [
-                  // Cart button
-                  GestureDetector(
-                    onTap: onAddToCart,
-                    child: Container(
-                      width: 11.w,
-                      height: 11.w,
-                      decoration: BoxDecoration(
                         color: AppColors.lightBackground,
-                        borderRadius: BorderRadius.circular(10),
                       ),
-                      child: Icon(
-                        Icons.shopping_bag_outlined,
-                        size: 18.sp,
-                        color: AppColors.lightTextPrimary,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+
+                    SizedBox(width: 5.w),
+
+                    Text(
+                     'Crafted with premium materials for exceptional comfort and lasting quality.'
+                      'Its modern silhouette blends timeless elegance with everyday versatility.'
+                      ' Designed to elevate your wardrobe, it pairs effortlessly with both casual and formal looks.'
+                      ' Every detail is carefully finished to deliver a refined and sophisticated experience.',
+                      textAlign: TextAlign.center,
+                      overflow: TextOverflow.ellipsis,
+                    maxLines: 4,
+                      style: GoogleFonts.cormorantGaramond(
+                        fontSize: 16.sp,
+                      
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.lightBackground,
                       ),
                     ),
-                  ),
 
-                  SizedBox(width: 2.w),
-
-                  // Buy Now button
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: onBuyNow,
-                      child: Container(
-                        height: 11.w,
-                        decoration: BoxDecoration(
-                          color: AppColors.black,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          'Buy Now',
-                          style: textTheme.labelLarge?.copyWith(
-                            fontSize: 13.sp,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.white,
-                            letterSpacing: 0.3,
-                          ),
-                        ),
+                    Text(
+                      '\$${variant.price.toStringAsFixed(0)}',
+                      style: GoogleFonts.cormorantGaramond(
+                        fontSize: 30.sp,
+                        fontWeight: FontWeight.bold,
+                        color: const Color.fromARGB(255, 244, 178, 57),
                       ),
                     ),
-                  ),
-                ],
+
+                    // Price
+                    SizedBox(height: 1.2.h),
+
+                    // ── Stats row ──────────────────────────────────────
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                      
+                        SizedBox(width: 4.w),
+                        _Stat(
+                          icon: Icons.shopping_bag_outlined,
+                          iconColor: AppColors.white,
+                          label: '${_formatCount(reel.salesCount)} sold',
+                        ),
+                        SizedBox(width: 4.w),
+                        _Stat(
+                          icon: Icons.star_rounded,
+                          iconColor: AppColors.gold,
+                          label:
+                              '${reel.rating.toStringAsFixed(1)} '
+                              '(${_formatCount(reel.reviewCount)})',
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
+
+              // ── Right: animated swipe hint ───────────────────────────
             ],
           ),
-        ).animate().slideY(
-              begin: 0.06,
-              end: 0,
-              duration: 300.ms,
-              curve: Curves.easeOutCubic,
-            ),
-      ),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Internal widgets
-// ─────────────────────────────────────────────────────────────────────────────
-
-class _MetaRow extends StatelessWidget {
-  const _MetaRow({required this.label, required this.value});
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    return Padding(
-      padding: EdgeInsets.only(bottom: 0.2.h),
-      child: RichText(
-        text: TextSpan(
-          children: [
-            TextSpan(
-              text: '$label ',
-              style: textTheme.bodyMedium?.copyWith(
-                fontSize: 12.5.sp,
-                fontWeight: FontWeight.w600,
-                color: AppColors.lightTextPrimary,
-              ),
-            ),
-            TextSpan(
-              text: value,
-              style: textTheme.bodyMedium?.copyWith(
-                fontSize: 11.5.sp,
-                fontWeight: FontWeight.bold,
-                color: AppColors.lightBackground,
-              ),
-            ),
-          ],
         ),
       ),
     );
   }
 }
 
-class _SizeChip extends StatelessWidget {
-  const _SizeChip({
+// ─────────────────────────────────────────────────────────────────────────────
+// Single stat — icon + label
+// ─────────────────────────────────────────────────────────────────────────────
+class _Stat extends StatelessWidget {
+  const _Stat({
+    required this.icon,
+    required this.iconColor,
     required this.label,
-    required this.isSelected,
-    required this.isSoldOut,
-    required this.onTap,
   });
 
+  final IconData icon;
+  final Color iconColor;
   final String label;
-  final bool isSelected;
-  final bool isSoldOut;
-  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-
-    return GestureDetector(
-      onTap: isSoldOut ? null : onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        width: 9.w,
-        height: 9.w,
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.reelsSizeSelected : Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: isSoldOut
-                ? AppColors.reelsSoldOut
-                : isSelected
-                    ? AppColors.reelsSizeSelected
-                    : AppColors.reelsSizeBorder,
-            width: 1.2,
-          ),
-        ),
-        alignment: Alignment.center,
-        child: Text(
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 20.sp, color: iconColor),
+        SizedBox(width: 1.w),
+        Text(
           label,
-          style: textTheme.labelLarge?.copyWith(
-            fontSize: 10.sp,
+          style: GoogleFonts.inter(
+            fontSize: 12.sp,
             fontWeight: FontWeight.w600,
-            color: isSoldOut
-                ? AppColors.reelsSoldOut
-                : isSelected
-                    ? AppColors.white
-                    : AppColors.lightTextPrimary,
-            decoration: isSoldOut ? TextDecoration.lineThrough : null,
-            decorationColor: AppColors.reelsSoldOut,
+            color: AppColors.lightBackground,
           ),
         ),
-      ),
+      ],
     );
   }
 }
 
-class _ColorSwatch extends StatelessWidget {
-  const _ColorSwatch({
-    required this.color,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  final Color color;
-  final bool isSelected;
-  final VoidCallback onTap;
+// ─────────────────────────────────────────────────────────────────────────────
+// Animated swipe-left hint
+// ─────────────────────────────────────────────────────────────────────────────
+class _SwipeHint extends StatelessWidget {
+  const _SwipeHint();
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        width: 6.w,
-        height: 6.w,
-        decoration: BoxDecoration(
-          color: color,
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: isSelected ? AppColors.black : Colors.transparent,
-            width: 2,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(Icons.chevron_left, color: AppColors.lightBackground, size: 22.sp)
+            .animate(onPlay: (c) => c.repeat())
+            .slideX(
+              begin: 0.3,
+              end: 0,
+              duration: 700.ms,
+              curve: Curves.easeInOut,
+            )
+            .then()
+            .slideX(
+              begin: 0,
+              end: 0.3,
+              duration: 700.ms,
+              curve: Curves.easeInOut,
+            ),
+        SizedBox(height: 0.4.h),
+        Text(
+          'Details',
+          style: TextStyle(
+            fontSize: 8.sp,
+            fontWeight: FontWeight.w500,
+            color: AppColors.lightTextSecondary,
           ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: AppColors.black.withOpacity(0.25),
-                    blurRadius: 0,
-                    spreadRadius: 2,
-                  )
-                ]
-              : null,
         ),
-      ),
+      ],
     );
   }
 }

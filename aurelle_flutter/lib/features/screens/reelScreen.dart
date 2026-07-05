@@ -1,33 +1,25 @@
 /// ─────────────────────────────────────────────────────────────────────────────
 /// reels_screen.dart
-/// Full-screen vertical reel feed.
-///
-/// Layout (bottom → top in Stack):
-///   1. PageView (vertical swipe, full screen)
-///      └─ Each page: _ReelPage (video background)
-///   2. AURELLE wordmark + share (top bar) — always on top
-///   3. Right action sidebar (like, comment, save)
-///   4. Product card — always visible, fades on video tap
-///
-/// Rules:
-///   ✅ Zero logic — all state from reelsProvider
-///   ✅ All colours from AppColors
-///   ✅ All sizing via .w / .h / .sp
+/// Architecture:
+///   Vertical PageView (swipe up/down = next/prev reel)
+///     └─ _ReelEntry  
+///          └─ Horizontal PageView
+///               Page 0: _ReelVideoPage (video + gradient + ReelsOverlay)
+///               Page 1: ProductDetailScreen (from ReelModel data)
 /// ─────────────────────────────────────────────────────────────────────────────
 
 import 'package:aurelle_flutter/core/theme/app_color.dart';
 import 'package:aurelle_flutter/features/model/reels_model.dart';
+import 'package:aurelle_flutter/features/provider/product_detail_provider.dart';
 import 'package:aurelle_flutter/features/provider/reels_provider.dart';
-import 'package:aurelle_flutter/shared/widget/Reels/action_sidebar.dart';
-import 'package:aurelle_flutter/shared/widget/Reels/product_card.dart';
-
+import 'package:aurelle_flutter/features/screens/productScreen.dart';
+import 'package:aurelle_flutter/shared/widget/reels/reels_overlay.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:the_responsive_builder/the_responsive_builder.dart';
 import 'package:video_player/video_player.dart';
-
 
 class ReelsScreen extends ConsumerWidget {
   const ReelsScreen({super.key});
@@ -37,165 +29,147 @@ class ReelsScreen extends ConsumerWidget {
     final state = ref.watch(reelsProvider);
     final notifier = ref.read(reelsProvider.notifier);
 
-    // Full-screen immersive — hide status bar
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
 
     if (state.isLoading) {
       return const Scaffold(
         backgroundColor: AppColors.black,
         body: Center(
-          child: CircularProgressIndicator(
-            color: AppColors.white,
-            strokeWidth: 1.5,
-          ),
+          child: CircularProgressIndicator(color: AppColors.white, strokeWidth: 1.5),
         ),
       );
     }
-
-    if (state.reels.isEmpty) {
-      return Scaffold(
-        backgroundColor: AppColors.black,
-        body: Center(
-          child: Text(
-            'No reels yet',
-            style: GoogleFonts.inter(color: AppColors.white),
-          ),
-        ),
-      );
-    }
-
-    final currentReel = state.currentReel!;
 
     return Scaffold(
       backgroundColor: AppColors.black,
-      body: Stack(
-        children: [
-
-          // ── 1. Vertical paging reel feed ───────────────────────────────
-          PageView.builder(
-            scrollDirection: Axis.vertical,
-            itemCount: state.reels.length,
-            onPageChanged: notifier.onPageChanged,
-            itemBuilder: (context, index) {
-              return _ReelPage(
-                reel: state.reels[index],
-                isActive: index == state.currentIndex,
-                onTap: notifier.toggleCard,
-              );
-            },
-          ),
-
-          // ── 2. Top bar: wordmark + share ───────────────────────────────
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: SafeArea(
-              bottom: false,
-              child: Padding(
-                padding: EdgeInsets.symmetric(
-                    horizontal: 4.w, vertical: 1.5.h),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'AURELLE',
-                      style: GoogleFonts.inter(
-                        fontSize: 13.sp,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 3.0,
-                        color: AppColors.white,
-                        shadows: const [
-                          Shadow(color: Colors.black38, blurRadius: 8),
-                        ],
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        // 🔁 Wire to share sheet
-                      },
-                      child: Icon(
-                        Icons.share_outlined,
-                        color: AppColors.white,
-                        size: 22.sp,
-                        shadows: const [
-                          Shadow(color: Colors.black38, blurRadius: 8),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-
-          // ── 3. Right action sidebar ────────────────────────────────────
-          // Positioned(
-          //   right: 3.w,
-          //   bottom: 42.h, // sits above the product card
-          //   child: ReelsActionsSidebar(
-          //     isLiked: currentReel.isLiked,
-          //     isSaved: currentReel.isSaved,
-          //     likeCount: currentReel.likes,
-          //     commentCount: currentReel.comments,
-          //     onLike: () => notifier.toggleLike(currentReel.id),
-          //     onSave: () => notifier.toggleSave(currentReel.id),
-          //     onComment: () {
-          //       // 🔁 Wire to comments bottom sheet
-          //     },
-          //     onShare: () {
-          //       // 🔁 Wire to share sheet
-          //     },
-          //   ),
-          // ),
-
-          // ── 4. Product card — always visible, fades on tap ────────────
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 20.h,
-            child: ReelsProductCard(
-              product: currentReel.product,
-              selectedSizeIndex: state.selectedSizeIndex,
-              selectedColorIndex: state.selectedColorIndex,
-              visible: state.cardVisible,
-              onSizeSelected: notifier.selectSize,
-              onColorSelected: notifier.selectColor,
-              onAddToCart: () {
-                // 🔁 Wire to cart provider
-              },
-              onBuyNow: () {
-                // 🔁 Wire to checkout flow
-              },
-            ),
-          ),
-
-        ],
+      body: PageView.builder(
+        scrollDirection: Axis.vertical,
+        itemCount: state.reels.length,
+        onPageChanged: notifier.onPageChanged,
+        itemBuilder: (context, index) {
+          return _ReelEntry(
+            reel: state.reels[index],
+            isActive: index == state.currentIndex,
+            cardVisible: state.cardVisible,
+            onCardTap: notifier.toggleCard,
+          );
+        },
       ),
     );
   }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// _ReelPage — single reel: video background + tap-to-toggle card
-// Uses same safe async init pattern as HeroBanner
+// _ReelEntry — horizontal PageView: video page + product detail page
 // ─────────────────────────────────────────────────────────────────────────────
-class _ReelPage extends StatefulWidget {
-  const _ReelPage({
+class _ReelEntry extends ConsumerStatefulWidget {
+  const _ReelEntry({
     required this.reel,
     required this.isActive,
-    required this.onTap,
+    required this.cardVisible,
+    required this.onCardTap,
   });
 
   final ReelModel reel;
   final bool isActive;
-  final VoidCallback onTap;
+  final bool cardVisible;
+  final VoidCallback onCardTap;
 
   @override
-  State<_ReelPage> createState() => _ReelPageState();
+  ConsumerState<_ReelEntry> createState() => _ReelEntryState();
 }
 
-class _ReelPageState extends State<_ReelPage> with WidgetsBindingObserver {
+class _ReelEntryState extends ConsumerState<_ReelEntry> {
+  late final PageController _hPageController;
+  bool _onProductPage = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _hPageController = PageController();
+    _hPageController.addListener(() {
+      final onProduct = (_hPageController.page ?? 0) > 0.5;
+      if (onProduct != _onProductPage) {
+        setState(() => _onProductPage = onProduct);
+        SystemChrome.setEnabledSystemUIMode(
+          onProduct ? SystemUiMode.edgeToEdge : SystemUiMode.immersiveSticky,
+        );
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _hPageController.dispose();
+    super.dispose();
+  }
+
+  void _goToProductPage() {
+    _hPageController.animateToPage(
+      1,
+      duration: const Duration(milliseconds: 350),
+      curve: Curves.easeOutCubic,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return PageView(
+      controller: _hPageController,
+      scrollDirection: Axis.horizontal,
+      children: [
+        // Page 0: Video + overlay
+        _ReelVideoPage(
+          reel: widget.reel,
+          isActive: widget.isActive && !_onProductPage,
+          cardVisible: widget.cardVisible,
+          onCardTap: widget.onCardTap,
+          onViewProduct: _goToProductPage,
+        ),
+
+        // Page 1: ProductDetailScreen fed from reel data
+        ProviderScope(
+          overrides: [
+            productDetailProvider(widget.reel.id).overrideWith(
+              (ref) {
+                final reel = ref.watch(reelsProvider).reels.firstWhere(
+                  (r) => r.id == widget.reel.id,
+                );
+                return ReelProductDetailNotifier(reel);
+              },
+            ),
+          ],
+          child: ProductDetailScreen(productId: widget.reel.id),
+        ),
+      ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// _ReelVideoPage — full screen video + gradient + overlay UI
+// ─────────────────────────────────────────────────────────────────────────────
+class _ReelVideoPage extends StatefulWidget {
+  const _ReelVideoPage({
+    required this.reel,
+    required this.isActive,
+    required this.cardVisible,
+    required this.onCardTap,
+    required this.onViewProduct,
+  });
+
+  final ReelModel reel;
+  final bool isActive;
+  final bool cardVisible;
+  final VoidCallback onCardTap;
+  final VoidCallback onViewProduct;
+
+  @override
+  State<_ReelVideoPage> createState() => _ReelVideoPageState();
+}
+
+class _ReelVideoPageState extends State<_ReelVideoPage>
+    with WidgetsBindingObserver {
   VideoPlayerController? _controller;
   bool _disposed = false;
   bool _isAppForeground = true;
@@ -210,29 +184,17 @@ class _ReelPageState extends State<_ReelPage> with WidgetsBindingObserver {
   Future<void> _initController() async {
     final asset = widget.reel.videoAsset;
     if (asset == null || asset.isEmpty) return;
-
     final controller = VideoPlayerController.asset(asset);
-
     try {
       await controller.initialize();
     } catch (_) {
       await controller.dispose();
       return;
     }
-
-    if (_disposed || !mounted) {
-      await controller.dispose();
-      return;
-    }
-
+    if (_disposed || !mounted) { await controller.dispose(); return; }
     await controller.setLooping(true);
     await controller.setVolume(0);
-
-    if (_disposed || !mounted) {
-      await controller.dispose();
-      return;
-    }
-
+    if (_disposed || !mounted) { await controller.dispose(); return; }
     _controller = controller;
     if (mounted) setState(() {});
     _syncPlayback();
@@ -242,17 +204,13 @@ class _ReelPageState extends State<_ReelPage> with WidgetsBindingObserver {
     if (_disposed) return;
     final c = _controller;
     if (c == null || !c.value.isInitialized) return;
-
     final shouldPlay = widget.isActive && _isAppForeground;
-    if (shouldPlay && !c.value.isPlaying) {
-      c.play();
-    } else if (!shouldPlay && c.value.isPlaying) {
-      c.pause();
-    }
+    if (shouldPlay && !c.value.isPlaying) c.play();
+    else if (!shouldPlay && c.value.isPlaying) c.pause();
   }
 
   @override
-  void didUpdateWidget(_ReelPage old) {
+  void didUpdateWidget(_ReelVideoPage old) {
     super.didUpdateWidget(old);
     if (old.isActive != widget.isActive) _syncPlayback();
   }
@@ -277,16 +235,15 @@ class _ReelPageState extends State<_ReelPage> with WidgetsBindingObserver {
     final videoReady = controller != null && controller.value.isInitialized;
 
     return GestureDetector(
-      onTap: widget.onTap,
+      onTap: widget.onCardTap,
       child: SizedBox.expand(
         child: ClipRect(
           child: Stack(
             fit: StackFit.expand,
             children: [
-              // Black base
-              const ColoredBox(color: AppColors.black),
 
-              // Video
+              // ── Video ───────────────────────────────────────────────────
+              const ColoredBox(color: AppColors.black),
               if (videoReady)
                 FittedBox(
                   fit: BoxFit.cover,
@@ -298,22 +255,67 @@ class _ReelPageState extends State<_ReelPage> with WidgetsBindingObserver {
                   ),
                 ),
 
-              // Gradient: darken top and bottom for readability
+              // ── Gradient — heavier at bottom for overlay legibility ──────
               const DecoratedBox(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      Color(0x66000000), // top ~40%
+                      Color(0x44000000), // top — light for top bar
                       Colors.transparent,
-                      Colors.transparent,
-                      Color(0x55000000), // bottom ~33% — light enough nav reads transparent
+                      Color(0x88000000), // mid fade
+                      Color(0xDD000000), // bottom — heavy for overlay text
                     ],
-                    stops: [0.0, 0.25, 0.55, 1.0],
+                    stops: [0.0, 0.3, 0.6, 1.0],
                   ),
                 ),
               ),
+
+              // ── Top bar: AURELLE · three-dot ────────────────────────────
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: SafeArea(
+                  bottom: false,
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 1.8.h),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'AURELLE',
+                          style: GoogleFonts.inter(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 3.5,
+                            color: AppColors.white,
+                          ),
+                        ),
+                        Icon(
+                          Icons.more_vert,
+                          color: AppColors.white,
+                          size: 22.sp,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+              // ── Overlay — sits above nav bar ────────────────────────────
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: kBottomNavigationBarHeight.toDouble() + 1.h,
+                child: ReelsOverlay(
+                  reel: widget.reel,
+                  visible: widget.cardVisible,
+                  onViewProduct: widget.onViewProduct,
+                ),
+              ),
+
             ],
           ),
         ),
