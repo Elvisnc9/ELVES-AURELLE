@@ -139,7 +139,7 @@ class _ReelEntryState extends ConsumerState<_ReelEntry> {
               },
             ),
           ],
-          child: ProductDetailScreen(productId: widget.reel.id),
+          child: ProductDetailScreen(productId: widget.reel.id, fromReels: true,),
         ),
       ],
     );

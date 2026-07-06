@@ -1,0 +1,55 @@
+aurelle_backend/
+├── src/
+│   ├── config/          # DB, cloudinary, env
+│   ├── middleware/       # auth, error handler, upload
+│   ├── modules/
+│   │   ├── auth/        # register, login, google OAuth
+│   │   ├── users/       # profile, preferences
+│   │   ├── products/    # catalog, search, filter
+│   │   ├── reels/       # feed, upload, stats
+│   │   ├── orders/      # cart, checkout, history
+│   │   └── wishlist/    # save, remove
+│   └── app.js
+└── server.js
+
+
+
+
+
+Runtime: Node.js + Express
+Database: MongoDB Atlas (free tier — 512MB, plenty for portfolio)
+Media: Cloudinary (free tier)
+Auth: JWT + bcrypt
+Real-time: Socket.IO
+
+
+POST /api/auth/register
+POST /api/auth/login
+POST /api/auth/refresh-token
+POST /api/auth/logout
+
+
+GET    /api/users/me
+PUT    /api/users/me
+PUT    /api/users/me/preferences   ← onboarding data
+
+GET    /api/products               ← catalog (filter, search, paginate)
+GET    /api/products/:id
+GET    /api/products/search?q=
+GET    /api/products/category/:slug
+
+GET    /api/cart
+POST   /api/cart/items
+PUT    /api/cart/items/:productId
+DELETE /api/cart/items/:productId
+DELETE /api/cart
+
+GET    /api/orders
+GET    /api/orders/:id
+POST   /api/orders
+
+
+
+
+
+

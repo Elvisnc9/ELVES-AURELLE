@@ -31,6 +31,8 @@ abstract class AppRoutes {
   /// Build an absolute product-detail path ready for context.go()
   static String productPath(String productId) => '/shop/product/$productId';
 
+  static String reelProductPath(String productId) => '/product/$productId';
+
   /// Build an absolute category path
   static String categoryPath(String slug) => '/shop/category/$slug';
 

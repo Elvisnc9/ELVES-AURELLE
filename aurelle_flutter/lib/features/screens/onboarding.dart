@@ -8,21 +8,9 @@ import 'package:aurelle_flutter/shared/widget/Onboarding/progress_indicator.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:the_responsive_builder/the_responsive_builder.dart';
 
-
-/// ─────────────────────────────────────────────────────────────────────────
-/// OnboardingScreen
-/// ONE Scaffold for the entire 3-step flow. A PageView swaps the body;
-/// the progress bar and bottom action bar live outside the PageView so
-/// they never rebuild/flicker between steps — only their content updates
-/// reactively via Riverpod.
-///
-/// PageController is NOT driven by user swipe gestures directly here —
-/// physics is locked (NeverScrollableScrollPhysics) so navigation only
-/// happens via the buttons, keeping selection validation enforceable
-/// (can't swipe past an incomplete required step).
-/// ─────────────────────────────────────────────────────────────────────────
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
 
@@ -55,55 +43,56 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     );
   }
 
-  void _completeOnboarding() {
-    context.go('/home');
-  }
+  void _completeOnboarding() => context.go('/home');
 
-TextTheme get theme => Theme.of(context).textTheme;
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(onboardingProvider);
-
+    final theme = Theme.of(context).textTheme;
 
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
           children: [
-            // ── Header: step label + progress bar ─────────────────────────
+            // ── Header ────────────────────────────────────────────────
             Padding(
-              padding: const EdgeInsets.fromLTRB(10, 16, 20, 0),
+              padding: EdgeInsets.fromLTRB(3.w, 2.h, 4.w, 0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                            SizedBox(
-                      
+                      SizedBox(
+                        width: 32,
                         height: 32,
                         child: state.currentPage > 0
                             ? IconButton(
                                 padding: EdgeInsets.zero,
                                 constraints: const BoxConstraints(),
-                                icon: const Icon(Icons.arrow_back, size: 28),
+                                icon: Icon(
+                                  Icons.arrow_back,
+                                  size: 20.dp,
+                                  color: AppColors.lightTextPrimary,
+                                ),
                                 onPressed: () =>
                                     _goToStep(state.currentPage - 1),
                               )
                             : null,
                       ),
-
-                      SizedBox(width: 1.w,),
+                      SizedBox(width: 1.w),
                       Text(
                         'STEP ${state.currentPage + 1} OF $_totalSteps',
-                        style:  theme.titleSmall
+                        style: GoogleFonts.inter(
+                          fontSize: 11.dp,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 1.6,
+                          color: const Color(0xFFC9A86A), // gold
+                        ),
                       ),
-
-
-
-                      
                     ],
                   ),
-                   SizedBox(height: 2.h),
+                  SizedBox(height: 1.5.h),
                   OnboardingProgress(
                     currentStep: state.currentPage,
                     totalSteps: _totalSteps,
@@ -112,11 +101,13 @@ TextTheme get theme => Theme.of(context).textTheme;
               ),
             ),
 
-            // ── Page content ───────────────────────────────────────────────
+            // ── Page content ───────────────────────────────────────────
             Expanded(
               child: PageView(
                 controller: _pageController,
-                physics: const BouncingScrollPhysics(),
+                // FIXED: was BouncingScrollPhysics — users could swipe past
+                // validation. NeverScrollable locks navigation to buttons only.
+                physics: const NeverScrollableScrollPhysics(),
                 onPageChanged: (index) =>
                     ref.read(onboardingProvider.notifier).goToPage(index),
                 children: const [
@@ -127,9 +118,9 @@ TextTheme get theme => Theme.of(context).textTheme;
               ),
             ),
 
-            // ── Bottom action bar (per-step config) ────────────────────────
+            // ── Bottom bar ─────────────────────────────────────────────
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+              padding: EdgeInsets.fromLTRB(4.w, 0, 4.w, 2.h),
               child: _buildBottomBar(state),
             ),
           ],
@@ -143,20 +134,20 @@ TextTheme get theme => Theme.of(context).textTheme;
       case 0:
         return OnboardingBottomBar(
           counterText: '${state.selectedStyles.length} of 3 selected',
-          buttonLabel: 'Next',
+          buttonLabel: 'NEXT',
           enabled: state.canProceedFromStyle,
           onPressed: () => _goToStep(1),
         );
       case 1:
         return OnboardingBottomBar(
-          buttonLabel: 'Next',
+          buttonLabel: 'NEXT',
           onSkip: () => _goToStep(2),
           onPressed: () => _goToStep(2),
         );
       case 2:
         return OnboardingBottomBar(
           counterText: '${state.selectedDiscovery.length} of 2 selected',
-          buttonLabel: 'Continue',
+          buttonLabel: 'CONTINUE',
           enabled: state.canProceedFromDiscovery,
           onPressed: _completeOnboarding,
         );
@@ -166,49 +157,56 @@ TextTheme get theme => Theme.of(context).textTheme;
   }
 }
 
-
+// ─────────────────────────────────────────────────────────────────────────────
+// StyleIdentityPage
+// ─────────────────────────────────────────────────────────────────────────────
 class StyleIdentityPage extends ConsumerWidget {
   const StyleIdentityPage({super.key});
- 
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selected = ref.watch(onboardingProvider).selectedStyles;
     final notifier = ref.read(onboardingProvider.notifier);
-    final theme = Theme.of(context).textTheme;
- 
+
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+      padding: EdgeInsets.fromLTRB(4.w, 1.h, 4.w, 3.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-           Text(
+          Text(
             "What's your Style Identity?",
-            style: theme.titleMedium,
+            style: GoogleFonts.cormorantGaramond(
+              fontSize: 26.dp,
+              fontWeight: FontWeight.w700,
+              color: AppColors.lightTextPrimary,
+            ),
           ),
-          const SizedBox(height: 6),
-           Text(
+          SizedBox(height: 0.6.h),
+          Text(
             'Select 2–3 aesthetics that resonate with you.',
-            style: theme.titleSmall?.copyWith(fontWeight: FontWeight.w400, color: AppColors.lightTextSecondary) ),
-        
-           SizedBox(height: 2.h),
+            style: GoogleFonts.inter(
+              fontSize: 12.dp,
+              fontWeight: FontWeight.w400,
+              color: AppColors.lightTextSecondary,
+            ),
+          ),
+          SizedBox(height: 2.h),
           GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: styleOptions.length,
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              mainAxisSpacing: 0, // extra vertical room for the overflow
-              crossAxisSpacing: 20,
-              childAspectRatio: 0.78,
-              mainAxisExtent: 30.h
+              mainAxisSpacing: 0,
+              crossAxisSpacing: 3.w,
+              mainAxisExtent: 30.h,
             ),
             itemBuilder: (context, index) {
               final option = styleOptions[index];
-              final isSelected = selected.contains(option.id);
               return OverlapImageCard(
                 imageAsset: option.imageAsset,
                 label: option.label,
-                selected: isSelected,
+                selected: selected.contains(option.id),
                 onTap: () => notifier.toggleStyle(option.id),
               );
             },
@@ -219,107 +217,127 @@ class StyleIdentityPage extends ConsumerWidget {
   }
 }
 
-
- 
- class BrandSelectionPage extends ConsumerStatefulWidget {
+// ─────────────────────────────────────────────────────────────────────────────
+// BrandSelectionPage
+// ─────────────────────────────────────────────────────────────────────────────
+class BrandSelectionPage extends ConsumerStatefulWidget {
   const BrandSelectionPage({super.key});
- 
+
   @override
   ConsumerState<BrandSelectionPage> createState() => _BrandSelectionPageState();
 }
- 
+
 class _BrandSelectionPageState extends ConsumerState<BrandSelectionPage> {
   final TextEditingController _searchController = TextEditingController();
   String _query = '';
- 
+
   @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
   }
- 
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, ) {
     final selected = ref.watch(onboardingProvider).selectedBrands;
     final notifier = ref.read(onboardingProvider.notifier);
-    final theme = Theme.of(context).textTheme;
- 
+
     final filtered = _query.isEmpty
         ? brandOptions
         : brandOptions
-            .where((b) => b.name.toLowerCase().contains(_query.toLowerCase()))
+            .where((b) =>
+                b.name.toLowerCase().contains(_query.toLowerCase()))
             .toList();
- 
+
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+      padding: EdgeInsets.fromLTRB(4.w, 1.h, 4.w, 3.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             'Your favorite brands',
-            style: theme.titleMedium,
+            style: GoogleFonts.cormorantGaramond(
+              fontSize: 26.dp,
+              fontWeight: FontWeight.w700,
+              color: AppColors.lightTextPrimary,
+            ),
           ),
-          const SizedBox(height: 6),
-           Text(
+          SizedBox(height: 0.6.h),
+          Text(
             'Pick the brands you love. You can skip this.',
-            style: theme.titleSmall?.copyWith(fontWeight: FontWeight.w400, color: AppColors.lightTextSecondary) 
+            style: GoogleFonts.inter(
+              fontSize: 12.dp,
+              color: AppColors.lightTextSecondary,
+            ),
           ),
-           SizedBox(height: 2.h),
- 
-          // ── Search field ────────────────────────────────────────────────
+          SizedBox(height: 2.h),
+
+          // ── Search — sharp corners to match app style ─────────────
           TextField(
             controller: _searchController,
             onChanged: (v) => setState(() => _query = v),
+            style: GoogleFonts.inter(fontSize: 13.dp),
             decoration: InputDecoration(
               hintText: 'Search brands...',
-              hintStyle: TextStyle(fontSize: 14.sp, color: Colors.black),
-              prefixIcon: const Icon(Icons.search, size: 20),
+              hintStyle: GoogleFonts.inter(
+                fontSize: 13.dp,
+                color: AppColors.lightTextSecondary,
+              ),
+              prefixIcon: Icon(Icons.search, size: 18.dp),
               filled: true,
-              fillColor: const Color(0xFFFAF8F5),
-              contentPadding: const EdgeInsets.symmetric(vertical: 12),
-              border: OutlineInputBorder(
-               
-                borderSide:  BorderSide(color: AppColors.black, ),
+              fillColor: AppColors.lightSurface,
+              contentPadding: EdgeInsets.symmetric(vertical: 1.5.h),
+              // FIXED: sharp border corners to match app-wide style
+              border: const OutlineInputBorder(
+                borderRadius: BorderRadius.zero,
+                borderSide: BorderSide(color: Color(0xFFE0DDD8)),
               ),
-              enabledBorder: OutlineInputBorder(
-               
-                borderSide: BorderSide(color: AppColors.black, width: 0.8),
+              enabledBorder: const OutlineInputBorder(
+                borderRadius: BorderRadius.zero,
+                borderSide: BorderSide(color: Color(0xFFE0DDD8), width: 1),
               ),
-             
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.zero,
+                borderSide: BorderSide(
+                    color: AppColors.lightTextPrimary, width: 1),
+              ),
             ),
           ),
-          const SizedBox(height: 20),
- 
-          // ── Brand grid — 4 columns, flat single-container tiles ─────────
+
+          SizedBox(height: 2.h),
+
+          // ── Brand grid — FIXED: 4 columns (was 2) ─────────────────
           GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: filtered.length,
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              mainAxisSpacing: 14,
+              crossAxisCount: 3,
+              mainAxisSpacing: 12,
               crossAxisSpacing: 10,
-              childAspectRatio: 0.85,
+              childAspectRatio: 0.8,
             ),
             itemBuilder: (context, index) {
               final brand = filtered[index];
-              final isSelected = selected.contains(brand.id);
               return BrandTile(
                 logoAsset: brand.logoAsset,
                 name: brand.name,
-                selected: isSelected,
+                selected: selected.contains(brand.id),
                 onTap: () => notifier.toggleBrand(brand.id),
               );
             },
           ),
- 
+
           if (filtered.isEmpty)
-            const Padding(
-              padding: EdgeInsets.only(top: 24),
+            Padding(
+              padding: EdgeInsets.only(top: 3.h),
               child: Center(
                 child: Text(
                   'No brands match your search.',
-                  style: TextStyle(color: Colors.black45, fontSize: 13),
+                  style: GoogleFonts.inter(
+                    fontSize: 12.dp,
+                    color: AppColors.lightTextSecondary,
+                  ),
                 ),
               ),
             ),
@@ -328,52 +346,56 @@ class _BrandSelectionPageState extends ConsumerState<BrandSelectionPage> {
     );
   }
 }
- 
- 
 
- class DiscoveryPreferencePage extends ConsumerWidget {
+// ─────────────────────────────────────────────────────────────────────────────
+// DiscoveryPreferencePage
+// ─────────────────────────────────────────────────────────────────────────────
+class DiscoveryPreferencePage extends ConsumerWidget {
   const DiscoveryPreferencePage({super.key});
- 
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selected = ref.watch(onboardingProvider).selectedDiscovery;
     final notifier = ref.read(onboardingProvider.notifier);
-        final theme = Theme.of(context).textTheme;
 
- 
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+      padding: EdgeInsets.fromLTRB(4.w, 1.h, 4.w, 3.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-           Text(
+          Text(
             'How do you like to discover?',
-            style:   theme.titleMedium,
+            style: GoogleFonts.cormorantGaramond(
+              fontSize: 26.dp,
+              fontWeight: FontWeight.w700,
+              color: AppColors.lightTextPrimary,
+            ),
           ),
-          const SizedBox(height: 6),
-           Text(
+          SizedBox(height: 0.6.h),
+          Text(
             "We'll tune your feed to match. Pick 1–2.",
-            style: theme.titleSmall?.copyWith(fontWeight: FontWeight.w400, color: AppColors.lightTextSecondary) 
+            style: GoogleFonts.inter(
+              fontSize: 12.dp,
+              color: AppColors.lightTextSecondary,
+            ),
           ),
-         SizedBox(height: 2.h),
+          SizedBox(height: 2.h),
           GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: discoveryOptions.length,
-            gridDelegate:  SliverGridDelegateWithFixedCrossAxisCount(
-             crossAxisCount: 2,
-              mainAxisSpacing: 0, // extra vertical room for the overflow
-              crossAxisSpacing: 20,
-              childAspectRatio: 0.78,
-              mainAxisExtent: 30.h
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              mainAxisSpacing: 0,
+              crossAxisSpacing: 3.w,
+              mainAxisExtent: 30.h,
             ),
             itemBuilder: (context, index) {
               final option = discoveryOptions[index];
-              final isSelected = selected.contains(option.id);
               return OverlapImageCard(
                 imageAsset: option.imageAsset,
                 label: option.label,
-                selected: isSelected,
+                selected: selected.contains(option.id),
                 onTap: () => notifier.toggleDiscovery(option.id),
               );
             },
@@ -383,4 +405,3 @@ class _BrandSelectionPageState extends ConsumerState<BrandSelectionPage> {
     );
   }
 }
- 

@@ -3,7 +3,6 @@ import 'package:aurelle_flutter/core/navigation/approutes.dart';
 import 'package:aurelle_flutter/core/navigation/pageTransition.dart';
 import 'package:aurelle_flutter/features/screens/QA.dart';
 import 'package:aurelle_flutter/features/screens/authScreen/Login.dart';
-import 'package:aurelle_flutter/features/screens/authScreen/Signup.dart';
 import 'package:aurelle_flutter/features/screens/cartScreen.dart';
 import 'package:aurelle_flutter/features/screens/category.dart';
 import 'package:aurelle_flutter/features/screens/homescreen.dart';
@@ -29,7 +28,7 @@ final routerProvider = Provider<GoRouter>((ref) {
   // final auth = ref.watch(authStateProvider);
 
   return GoRouter(
-    initialLocation: AppRoutes.home,
+    initialLocation: AppRoutes.onboarding,
     debugLogDiagnostics: false, // disable in prod
     // refreshListenable: GoRouterRefreshStream(auth.stream),
 
@@ -68,11 +67,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         pageBuilder: (context, state) => FadeTransitionPage(
             key: state.pageKey, child: const LoginScreen()),
       ),
-      GoRoute(
-        path: AppRoutes.signup,
-        pageBuilder: (context, state) => SlideUpTransitionPage(
-            key: state.pageKey, child: const SignUpScreen()),
-      ),
+     
 
       GoRoute(
   path: '/search',
@@ -98,6 +93,7 @@ GoRoute(
               child: const CartScreen(),
             ),
           ),
+
 
 
       // ── Shell (tabs) ────────────────────────────────────────────────────
@@ -131,7 +127,7 @@ GoRoute(
                   final productId = state.pathParameters['productId']!;
                   return SlideRightTransitionPage(
                     key: state.pageKey,
-                    child: ProductDetailScreen(productId: productId),
+                    child: ProductDetailScreen(productId: productId, fromReels: false),
                   );
                 },
               ),

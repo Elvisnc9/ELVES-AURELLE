@@ -5,10 +5,12 @@
 /// and item sizing can be tuned independently if needed.
 /// ─────────────────────────────────────────────────────────────────────────────
 
+import 'package:aurelle_flutter/core/navigation/approutes.dart';
 import 'package:aurelle_flutter/features/model/home_model.dart';
 import 'package:aurelle_flutter/shared/widget/home/section_header.dart';
 import 'package:aurelle_flutter/shared/widget/Product/product_card.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:the_responsive_builder/the_responsive_builder.dart';
 
 class RecentlyViewedSection extends StatelessWidget {
@@ -44,7 +46,9 @@ class RecentlyViewedSection extends StatelessWidget {
             separatorBuilder: (_, __) => SizedBox(width: 3.w),
             itemBuilder: (context, i) => ProductCard(
               product: products[i],
-              onTap: () => onProductTap?.call(products[i]),
+              onTap: () {
+                context.push(AppRoutes.productDetail, extra: products[i]);
+              },
             ),
           ),
         ),

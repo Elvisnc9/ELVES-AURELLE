@@ -1,13 +1,8 @@
 import 'package:aurelle_flutter/core/theme/app_color.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:the_responsive_builder/the_responsive_builder.dart';
 
-/// ─────────────────────────────────────────────────────────────────────────
-/// BrandTile
-/// Deliberately ONE container — logo and name sit directly inside it.
-/// No inner box wrapping the logo; the selection border/badge are applied
-/// to this same outer container, not a child.
-/// ─────────────────────────────────────────────────────────────────────────
 class BrandTile extends StatelessWidget {
   const BrandTile({
     super.key,
@@ -22,19 +17,20 @@ class BrandTile extends StatelessWidget {
   final bool selected;
   final VoidCallback onTap;
 
- static const Color _gold = Color.fromARGB(255, 231, 156, 18);
+  static const Color _gold = Color(0xFFC9A86A);
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 8),
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
         decoration: BoxDecoration(
           color: AppColors.lightSurface,
           border: Border.all(
             color: selected ? _gold : Colors.transparent,
-            width: selected ? 1.5 : 1,
+            width: 1.5,
           ),
         ),
         child: Stack(
@@ -43,16 +39,34 @@ class BrandTile extends StatelessWidget {
             Center(
               child: Image.asset(
                 logoAsset,
-                height: 20.h,
-                fit: BoxFit.contain,
-                errorBuilder: (_, __, ___) => const Icon(
+               
+                errorBuilder: (_, _, _) => Icon(
                   Icons.storefront_outlined,
-                  size: 28,
-                  color: Colors.black54,
+                  size: 24,
+                  color: AppColors.lightTextSecondary,
                 ),
               ),
             ),
-           
+
+            // ── Gold checkmark badge ──────────────────────────────────
+            if (selected)
+              Positioned(
+                top: -8,
+                right: -4,
+                child: Container(
+                  width: 20,
+                  height: 20,
+                  decoration: const BoxDecoration(
+                    color: _gold,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.check,
+                    size: 12,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
           ],
         ),
       ),

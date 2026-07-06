@@ -29,7 +29,7 @@ const List<ShellNavItem> shellNavItems = [
   ShellNavItem(
     label: 'Shop',
     icon: 'assets/icon/shopping-cart.png',
-    activeIcon: 'assets/icon/shopping-cart_filled.png',
+    activeIcon: 'assets/icon/grocery-store.png',
     rootPath: AppRoutes.shop,
   ),
     ShellNavItem(

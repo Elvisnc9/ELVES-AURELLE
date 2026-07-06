@@ -24,7 +24,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:the_responsive_builder/the_responsive_builder.dart';
 
 class ProductDetailScreen extends ConsumerWidget {
-  const ProductDetailScreen({super.key, required this.productId});
+  const ProductDetailScreen({super.key, required this.productId, required bool fromReels});
   final String productId;
 
   @override
@@ -225,7 +225,7 @@ class ProductDetailScreen extends ConsumerWidget {
                          ],
                        ),),
 
-                    SliverToBoxAdapter(child: SizedBox(height: 4.h)),
+                    SliverToBoxAdapter(child: SizedBox(height: 10.h)),
                   ],
                 ),
               );
@@ -256,7 +256,7 @@ class _TopBar extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             GestureDetector(
-              onTap: () => Navigator.of(context).pop(),
+              onTap: () {},
               behavior: HitTestBehavior.opaque,
               child: Text('BACK', style: style),
             ),

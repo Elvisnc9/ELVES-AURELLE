@@ -1,12 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:the_responsive_builder/the_responsive_builder.dart';
 
-/// ─────────────────────────────────────────────────────────────────────────
-/// OnboardingBottomBar
-/// Shared bottom action area for all 3 pages — counter pill (optional),
-/// skip link (optional), and the primary button. Kept as one widget so
-/// button styling/spacing never drifts between pages.
-/// ─────────────────────────────────────────────────────────────────────────
 class OnboardingBottomBar extends StatelessWidget {
   const OnboardingBottomBar({
     super.key,
@@ -28,57 +23,74 @@ class OnboardingBottomBar extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
+        // ── Counter pill ──────────────────────────────────────────────
         if (counterText != null) ...[
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8.0),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF0EDE7),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                counterText!,
-                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 0.8.h),
+            decoration: const BoxDecoration(
+              color: Color(0xFFF0EDE7),
+              // sharp corners — matches app-wide button language
+            ),
+            child: Text(
+              counterText!,
+              style: GoogleFonts.inter(
+                fontSize: 12.dp,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
               ),
             ),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 1.2.h),
         ],
+
+        // ── Skip link ─────────────────────────────────────────────────
         if (onSkip != null) ...[
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8.0),
-            child: TextButton(
-              onPressed: onSkip,
-              child: const Text(
+          GestureDetector(
+            onTap: onSkip,
+            behavior: HitTestBehavior.opaque,
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 1.h),
+              child: Text(
                 'Skip for now',
-                style: TextStyle(color: Colors.black54, fontWeight: FontWeight.w500),
+                style: GoogleFonts.inter(
+                  fontSize: 12.dp,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.black54,
+                ),
               ),
             ),
           ),
-           SizedBox(height: 4),
+          SizedBox(height: 0.5.h),
         ],
+
+        // ── Primary CTA — BorderRadius.zero matches every other screen ─
         SizedBox(
           width: double.infinity,
-          height: 52,
+          height: 6.h,
           child: ElevatedButton(
             onPressed: enabled ? onPressed : null,
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.black,
               disabledBackgroundColor: Colors.black26,
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
               elevation: 0,
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.zero, // fixed — was circular(4)
+              ),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
                   buttonLabel,
-                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                  style: GoogleFonts.inter(
+                    fontSize: 12.dp,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1.2,
+                  ),
                 ),
                 const SizedBox(width: 8),
-                const Icon(Icons.arrow_forward, size: 18),
+                Icon(Icons.arrow_forward, size: 16.dp),
               ],
             ),
           ),
