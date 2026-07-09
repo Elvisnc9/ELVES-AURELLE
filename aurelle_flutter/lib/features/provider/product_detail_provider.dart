@@ -1,11 +1,37 @@
+/// ─────────────────────────────────────────────────────────────────────────────
+/// product_detail_provider.dart
+///
+/// Architecture:
+///   • productDetailProvider(productId) is the single source of truth for
+///     ProductDetailScreen — used whether navigated from Shop OR Reels.
+///   • reelProductCacheProvider holds reel product data written by ReelsScreen
+///     before it navigates. productDetailProvider checks this cache first
+///     before falling back to the API fetch.
+///   • This means no separate provider, no fromReels flag, no duplicate screen.
+/// ─────────────────────────────────────────────────────────────────────────────
+
 import 'package:aurelle_flutter/features/model/shop_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-// ── Provider (takes productId so each product gets its own state) ─────────────
+// ── Reel product cache ────────────────────────────────────────────────────────
+// ReelsScreen writes reel variant data here (keyed by variantId) before
+// pushing the product route. productDetailProvider reads it first.
+// When backend is wired, real product API responses will populate this same
+// cache, so the flow stays identical.
+
+final reelProductCacheProvider =
+    StateProvider<Map<String, ProductDetailState>>((ref) => {});
+
+// ── Main provider ─────────────────────────────────────────────────────────────
 
 final productDetailProvider = StateNotifierProvider.family<
     ProductDetailNotifier, ProductDetailState, String>(
-  (ref, productId) => ProductDetailNotifier(productId),
+  (ref, productId) {
+    // Check reel cache first — populated by ReelsScreen before navigation
+    final cached = ref.read(reelProductCacheProvider)[productId];
+    if (cached != null) return ProductDetailNotifier.fromState(cached);
+    return ProductDetailNotifier(productId);
+  },
 );
 
 // ── Notifier ──────────────────────────────────────────────────────────────────
@@ -16,13 +42,11 @@ class ProductDetailNotifier extends StateNotifier<ProductDetailState> {
     _load();
   }
 
-  final String productId;
-
-  /// Named constructor used by ReelProductDetailNotifier to inject
-  /// pre-built state directly — no async load needed.
   ProductDetailNotifier.fromState(ProductDetailState initialState)
       : productId = '',
         super(initialState);
+
+  final String productId;
 
   Future<void> _load() async {
     await Future.delayed(const Duration(milliseconds: 350));
@@ -33,15 +57,13 @@ class ProductDetailNotifier extends StateNotifier<ProductDetailState> {
     );
   }
 
-  /// User tapped a thumbnail — swap the entire active variant
   void selectVariant(int index) {
     state = state.copyWith(
       selectedVariantIndex: index,
-      selectedImageIndex: 0, // reset to first image of new variant
+      selectedImageIndex: 0,
     );
   }
 
-  /// User swiped the main image carousel
   void selectImage(int index) {
     state = state.copyWith(selectedImageIndex: index);
   }
@@ -51,7 +73,7 @@ class ProductDetailNotifier extends StateNotifier<ProductDetailState> {
   }
 }
 
-// ── Mock variant data ─────────────────────────────────────────────────────────
+// ── Mock data (unchanged) ─────────────────────────────────────────────────────
 
 const _fallbackVariants = [
   ProductVariant(
@@ -63,9 +85,9 @@ const _fallbackVariants = [
     salePercent: 40,
     images: [],
     itemCode: '261161F095003',
-    itemInfo: 'Garter-stitch knit cotton cardigan.\n\n· Colorblocking and loose threads throughout\n· Rib-knit crewneck, hem, and cuffs\n· Button closure\n· Raglan sleeves\n· Corozo hardware',
+    itemInfo:
+        'Garter-stitch knit cotton cardigan.\n\n· Colorblocking and loose threads throughout\n· Rib-knit crewneck, hem, and cuffs\n· Button closure\n· Raglan sleeves\n· Corozo hardware',
     supplierColor: 'Green',
-    
   ),
   ProductVariant(
     id: 'v2',
@@ -76,98 +98,12 @@ const _fallbackVariants = [
     salePercent: 40,
     images: [],
     itemCode: '261161F095004',
-    itemInfo: 'Garter-stitch knit cotton cardigan.\n\n· Colorblocking and loose threads throughout\n· Rib-knit crewneck, hem, and cuffs\n· Button closure\n· Raglan sleeves\n· Corozo hardware',
+    itemInfo:
+        'Garter-stitch knit cotton cardigan.\n\n· Colorblocking and loose threads throughout',
     supplierColor: 'Blue',
-  ),
-  ProductVariant(
-    id: 'v3',
-    brand: 'YMC',
-    productName: 'Beige Atomic Cardigan',
-    price: 210,
-    originalPrice: 325,
-    salePercent: 35,
-    images: [],
-    itemCode: '261161F095005',
-    itemInfo: 'Garter-stitch knit cotton cardigan.\n\n· Colorblocking and loose threads throughout\n· Rib-knit crewneck, hem, and cuffs\n· Button closure\n· Raglan sleeves\n· Corozo hardware',
-    supplierColor: 'Beige',
-  ),
-    ProductVariant(
-    id: 'v1',
-    brand: 'YMC',
-    productName: 'Green Atomic Cardigan',
-    price: 195,
-    originalPrice: 325,
-    salePercent: 40,
-    images: [],
-    itemCode: '261161F095003',
-    itemInfo: 'Garter-stitch knit cotton cardigan.\n\n· Colorblocking and loose threads throughout\n· Rib-knit crewneck, hem, and cuffs\n· Button closure\n· Raglan sleeves\n· Corozo hardware',
-    supplierColor: 'Green',
-    
-  ),
-  ProductVariant(
-    id: 'v2',
-    brand: 'YMC',
-    productName: 'Blue Atomic Cardigan',
-    price: 195,
-    originalPrice: 325,
-    salePercent: 40,
-    images: [],
-    itemCode: '261161F095004',
-    itemInfo: 'Garter-stitch knit cotton cardigan.\n\n· Colorblocking and loose threads throughout\n· Rib-knit crewneck, hem, and cuffs\n· Button closure\n· Raglan sleeves\n· Corozo hardware',
-    supplierColor: 'Blue',
-  ),
-  ProductVariant(
-    id: 'v3',
-    brand: 'YMC',
-    productName: 'Beige Atomic Cardigan',
-    price: 210,
-    originalPrice: 325,
-    salePercent: 35,
-    images: [],
-    itemCode: '261161F095005',
-    itemInfo: 'Garter-stitch knit cotton cardigan.\n\n· Colorblocking and loose threads throughout\n· Rib-knit crewneck, hem, and cuffs\n· Button closure\n· Raglan sleeves\n· Corozo hardware',
-    supplierColor: 'Beige',
-  ),
-    ProductVariant(
-    id: 'v1',
-    brand: 'YMC',
-    productName: 'Green Atomic Cardigan',
-    price: 195,
-    originalPrice: 325,
-    salePercent: 40,
-    images: [],
-    itemCode: '261161F095003',
-    itemInfo: 'Garter-stitch knit cotton cardigan.\n\n· Colorblocking and loose threads throughout\n· Rib-knit crewneck, hem, and cuffs\n· Button closure\n· Raglan sleeves\n· Corozo hardware',
-    supplierColor: 'Green',
-    
-  ),
-  ProductVariant(
-    id: 'v2',
-    brand: 'YMC',
-    productName: 'Blue Atomic Cardigan',
-    price: 195,
-    originalPrice: 325,
-    salePercent: 40,
-    images: [],
-    itemCode: '261161F095004',
-    itemInfo: 'Garter-stitch knit cotton cardigan.\n\n· Colorblocking and loose threads throughout\n· Rib-knit crewneck, hem, and cuffs\n· Button closure\n· Raglan sleeves\n· Corozo hardware',
-    supplierColor: 'Blue',
-  ),
-  ProductVariant(
-    id: 'v3',
-    brand: 'YMC',
-    productName: 'Beige Atomic Cardigan',
-    price: 210,
-    originalPrice: 325,
-    salePercent: 35,
-    images: [],
-    itemCode: '261161F095005',
-    itemInfo: 'Garter-stitch knit cotton cardigan.\n\n· Colorblocking and loose threads throughout\n· Rib-knit crewneck, hem, and cuffs\n· Button closure\n· Raglan sleeves\n· Corozo hardware',
-    supplierColor: 'Beige',
   ),
 ];
 
-// 🔁 Keyed by productId — swap with API response
 const Map<String, List<ProductVariant>> _mockVariants = {
   'w2': _fallbackVariants,
 };

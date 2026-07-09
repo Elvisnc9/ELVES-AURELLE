@@ -23,11 +23,13 @@ class ReelsOverlay extends StatelessWidget {
     required this.reel,
     required this.visible,
     required this.onViewProduct,
+    required this.onBrandTap,
   });
 
   final ReelModel reel;
   final bool visible;
   final VoidCallback onViewProduct;
+  final VoidCallback onBrandTap;
 
   String _fmt(int count) =>
       count >= 1000 ? '${(count / 1000).toStringAsFixed(1)}k' : '$count';
@@ -50,23 +52,27 @@ class ReelsOverlay extends StatelessWidget {
             children: [
 
               // ── Brand pill ─────────────────────────────────────────────
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 1.5.h),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.white.withOpacity(0.6), width: 1),
-                  color: Colors.white.withOpacity(0.08),
-                ),
-                child: Text(
-                  variant.brand.toUpperCase(),
-                  style: GoogleFonts.inter(
-                    fontSize: 10.sp,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 1.5,
-                    color: AppColors.white,
+              GestureDetector(
+                onTap: onBrandTap,
+                behavior: HitTestBehavior.opaque,
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 1.5.h),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.white.withOpacity(0.6), width: 1),
+                    color: Colors.white.withOpacity(0.08),
                   ),
-                ),
-              ).animate().fadeIn(delay: 80.ms, duration: 400.ms),
+                  child: Text(
+                    variant.brand.toUpperCase(),
+                    style: GoogleFonts.inter(
+                      fontSize: 10.sp,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 1.5,
+                      color: AppColors.white,
+                    ),
+                  ),
+                ).animate().fadeIn(delay: 80.ms, duration: 400.ms),
+              ),
 
               SizedBox(height: 1.h),
 

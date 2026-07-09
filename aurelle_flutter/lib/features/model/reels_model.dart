@@ -9,6 +9,7 @@
 /// No new screen. ProductDetailScreen is reused as-is.
 /// ─────────────────────────────────────────────────────────────────────────────
 
+import 'package:aurelle_flutter/features/model/brand_model.dart';
 import 'package:aurelle_flutter/features/model/shop_model.dart';
 import 'package:flutter/material.dart';
 
@@ -67,6 +68,7 @@ class ReelProductVariant {
 class ReelModel {
   const ReelModel({
     required this.id,
+    required this.brand,
     required this.variants,         // index 0 = primary product shown on reel
     this.videoAsset,
     this.videoUrl,
@@ -87,6 +89,8 @@ class ReelModel {
   // Video
   final String? videoAsset;
   final String? videoUrl;
+  final BrandProfile brand;
+  
 
   // Social proof — shown on the minimal reel card
   final int likes;
@@ -116,7 +120,7 @@ class ReelModel {
       rating: rating,
       reviewCount: reviewCount,
       isLiked: isLiked ?? this.isLiked,
-      isSaved: isSaved ?? this.isSaved,
+      isSaved: isSaved ?? this.isSaved, brand: brand ?? this.brand,
     );
   }
 }

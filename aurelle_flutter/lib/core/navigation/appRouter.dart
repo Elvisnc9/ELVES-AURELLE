@@ -2,12 +2,14 @@ import 'package:aurelle_flutter/config/appshell.dart';
 import 'package:aurelle_flutter/core/navigation/approutes.dart';
 import 'package:aurelle_flutter/core/navigation/pageTransition.dart';
 import 'package:aurelle_flutter/features/screens/QA.dart';
+import 'package:aurelle_flutter/features/screens/address_screen.dart';
 import 'package:aurelle_flutter/features/screens/authScreen/Login.dart';
 import 'package:aurelle_flutter/features/screens/cartScreen.dart';
 import 'package:aurelle_flutter/features/screens/category.dart';
 import 'package:aurelle_flutter/features/screens/homescreen.dart';
 import 'package:aurelle_flutter/features/screens/checkOutScreen.dart';
 import 'package:aurelle_flutter/features/screens/onboarding.dart';
+import 'package:aurelle_flutter/features/screens/payScreen.dart';
 import 'package:aurelle_flutter/features/screens/productScreen.dart';
 import 'package:aurelle_flutter/features/screens/profile.dart';
 import 'package:aurelle_flutter/features/screens/reelScreen.dart';
@@ -16,126 +18,98 @@ import 'package:aurelle_flutter/features/screens/setting.dart';
 import 'package:aurelle_flutter/features/screens/shopScreen.dart';
 import 'package:aurelle_flutter/features/screens/splashScreen.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart' hide NoTransitionPage;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart' hide NoTransitionPage;
 
-
-// ── Provider ──────────────────────────────────────────────────────────────────
-/// Expose the router as a Riverpod provider so it can be refreshed
-/// (e.g. on auth-state change) without rebuilding the widget tree.
 final routerProvider = Provider<GoRouter>((ref) {
-  // 🔁 Swap this with your real auth provider when ready.
-  // final auth = ref.watch(authStateProvider);
-
   return GoRouter(
-    initialLocation: AppRoutes.onboarding,
-    debugLogDiagnostics: false, // disable in prod
-    // refreshListenable: GoRouterRefreshStream(auth.stream),
-
-    // ── Global redirect ─────────────────────────────────────────────────────
-    redirect: (BuildContext context, GoRouterState state) {
-      // Example auth-guard skeleton:
-      // final isLoggedIn = auth.isLoggedIn;
-      // final goingToAuth = state.matchedLocation.startsWith('/login') ||
-      //     state.matchedLocation == AppRoutes.splash ||
-      //     state.matchedLocation == AppRoutes.onboarding;
-      // if (!isLoggedIn && !goingToAuth) return AppRoutes.login;
-      // if (isLoggedIn && goingToAuth) return AppRoutes.home;
-      return null; // no redirect
-    },
+    initialLocation: AppRoutes.home,
+    debugLogDiagnostics: false,
+    redirect: (context, state) => null,
 
     routes: [
 
-
-      // ── Splash ──────────────────────────────────────────────────────────
-   GoRoute(
+      // ── Pre-shell screens ──────────────────────────────────────────────────
+      GoRoute(
         path: AppRoutes.splash,
         pageBuilder: (context, state) => SlideUpTransitionPage(
             key: state.pageKey, child: const SplashScreen()),
       ),
 
-      // ── Onboarding ──────────────────────────────────────────────────────
       GoRoute(
         path: AppRoutes.onboarding,
         pageBuilder: (context, state) => NoTransitionPage(
             key: state.pageKey, child: const OnboardingScreen()),
       ),
-
-      // ── Auth ────────────────────────────────────────────────────────────
       GoRoute(
         path: AppRoutes.login,
         pageBuilder: (context, state) => FadeTransitionPage(
             key: state.pageKey, child: const LoginScreen()),
       ),
-     
-
       GoRoute(
-  path: '/search',
-  pageBuilder: (context, state) => NoTransitionPage(
+        path: AppRoutes.search,
+        pageBuilder: (context, state) => NoTransitionPage(
+            key: state.pageKey, child: const SearchScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.cart,
+        pageBuilder: (context, state) => NoTransitionPage(
+            key: state.pageKey, child: const CartScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.checkout,
+        pageBuilder: (context, state) => SlideUpTransitionPage(
+            key: state.pageKey, child: const CheckoutScreen()),
+      ),
+      GoRoute(
+  path: '/address/add',
+  pageBuilder: (context, state) => SlideRightTransitionPage(
     key: state.pageKey,
-    child: const SearchScreen(),
+    child: const AddAddressScreen(),
   ),
 ),
-
-
-GoRoute(
-  path: AppRoutes.checkout,
-  pageBuilder: (context, state) => SlideUpTransitionPage(
-    key: state.pageKey,
-    child: const CheckoutScreen(),
-  ),
+      GoRoute(
+  path: '/payment',
+  pageBuilder: (context, state) {
+    final total = double.tryParse(
+      state.uri.queryParameters['total'] ?? '0') ?? 0;
+    return SlideUpTransitionPage(
+      key: state.pageKey,
+      child: PaymentScreen(orderTotal: total),
+    );
+  },
 ),
 
-   GoRoute(
-            path: AppRoutes.cart,
-            pageBuilder: (context, state) => NoTransitionPage(
-              key: state.pageKey,
-              child: const CartScreen(),
-            ),
-          ),
+      // ── Product detail — outside ShellRoute so NO bottom nav bar shows ─────
+      // Both the Shop grid and the Reels "View Product" button push this same
+      // route via AppRoutes.productPath(id). One screen, one route, always.
+      GoRoute(
+        path: AppRoutes.productDetail,
+        pageBuilder: (context, state) {
+          final productId = state.pathParameters['productId']!;
+          return SlideRightTransitionPage(
+            key: state.pageKey,
+            child: ProductDetailScreen(productId: productId, ),
+          );
+        },
+      ),
 
-
-
-      // ── Shell (tabs) ────────────────────────────────────────────────────
+      // ── Shell (tabs with persistent bottom nav) ────────────────────────────
       ShellRoute(
-        // AppShell is the persistent Scaffold that hosts the bottom nav
-        // and swaps only the body via the `child` argument.
         builder: (context, state, child) => AppShell(child: child),
-
         routes: [
-          // ── Home ──────────────────────────────────────────────────────
+
           GoRoute(
             path: AppRoutes.home,
             pageBuilder: (context, state) => NoTransitionPage(
-              key: state.pageKey,
-              child: const Homescreen(),
-            ),
+                key: state.pageKey, child: const Homescreen()),
           ),
 
-          // ── Shop (with nested routes) ─────────────────────────────────
           GoRoute(
             path: AppRoutes.shop,
             pageBuilder: (context, state) => NoTransitionPage(
-              key: state.pageKey,
-              child: const ShopScreen(),
-            ),
+                key: state.pageKey, child: const ShopScreen()),
             routes: [
-              // /shop/product/:productId
-              GoRoute(
-                path: AppRoutes.productDetail,
-                pageBuilder: (context, state) {
-                  final productId = state.pathParameters['productId']!;
-                  return SlideRightTransitionPage(
-                    key: state.pageKey,
-                    child: ProductDetailScreen(productId: productId, fromReels: false),
-                  );
-                },
-              ),
-
-
-
-
-              // /shop/category/:categorySlug
               GoRoute(
                 path: AppRoutes.category,
                 pageBuilder: (context, state) {
@@ -149,72 +123,41 @@ GoRoute(
             ],
           ),
 
-          // ── Cart ──────────────────────────────────────────────────────
-       
+          
 
+          GoRoute(
+            path: AppRoutes.reels,
+            pageBuilder: (context, state) => NoTransitionPage(
+                key: state.pageKey, child: const ReelsScreen()),
+          ),
 
-                          GoRoute(
-    path: AppRoutes.reels,
-    pageBuilder: (context, state) => NoTransitionPage(
-      key: state.pageKey,
-      child: const ReelsScreen(),
-    ),
-  ),
-
-          // ── Profile (with nested routes) ──────────────────────────────
           GoRoute(
             path: AppRoutes.profile,
             pageBuilder: (context, state) => NoTransitionPage(
-              key: state.pageKey,
-              child: const ProfileScreen(),
-            ),
+                key: state.pageKey, child: const ProfileScreen()),
             routes: [
-              // /profile/orders
               GoRoute(
                 path: AppRoutes.orders,
                 pageBuilder: (context, state) => SlideRightTransitionPage(
-                  key: state.pageKey,
-                  child: const CheckoutScreen(),
-                ),
-                routes: [
-                  // /profile/orders/:orderId
-                  // GoRoute(
-                  //   path: 'orders/:orderId',
-                  //   pageBuilder: (context, state) {
-                  //     final orderId = state.pathParameters['orderId']!;
-                  //     return SlideRightTransitionPage(
-                  //       key: state.pageKey,
-                  //       child: OrderDetailScreen(orderId: orderId),
-                  //     );
-                  //   },
-                  // ),
-                ],
+                    key: state.pageKey, child: const CheckoutScreen()),
               ),
-
-              // /profile/settings
               GoRoute(
                 path: AppRoutes.settings,
                 pageBuilder: (context, state) => SlideRightTransitionPage(
-                  key: state.pageKey,
-                  child: const SettingScreen(),
-                ),
+                    key: state.pageKey, child: const SettingScreen()),
               ),
-
-              // /profile/qa
               GoRoute(
                 path: AppRoutes.qa,
                 pageBuilder: (context, state) => SlideRightTransitionPage(
-                  key: state.pageKey,
-                  child: const InterviewScreen(),
-                ),
+                    key: state.pageKey, child: const InterviewScreen()),
               ),
             ],
           ),
+
         ],
       ),
     ],
 
-    // ── 404 ────────────────────────────────────────────────────────────────
     errorPageBuilder: (context, state) => MaterialPage(
       key: state.pageKey,
       child: Scaffold(

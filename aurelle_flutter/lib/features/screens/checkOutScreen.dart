@@ -8,9 +8,12 @@
 ///   • Sticky PLACE ORDER button
 /// ─────────────────────────────────────────────────────────────────────────────
 
+import 'package:aurelle_flutter/core/navigation/approutes.dart';
 import 'package:aurelle_flutter/core/theme/app_color.dart';
 import 'package:aurelle_flutter/features/model/cart_model.dart';
+import 'package:aurelle_flutter/features/provider/address_provider.dart';
 import 'package:aurelle_flutter/features/provider/cart_provider.dart';
+import 'package:aurelle_flutter/shared/widget/checkOut/shipping_address_row.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -24,6 +27,7 @@ class CheckoutScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(cartProvider);
+    final address = ref.watch(addressProvider);
 
     return Scaffold(
       backgroundColor: AppColors.lightBackground,
@@ -58,17 +62,7 @@ class CheckoutScreen extends ConsumerWidget {
                   _HairlineSliver(),
 
                   // SHIPPING row
-                  SliverToBoxAdapter(
-                    child: _CheckoutInfoRow(
-                      label: 'SHIPPING',
-                      content: 'Add shipping address',
-                      isPlaceholder: true,
-                      showChevron: true,
-                      onTap: () {}, // 🔁 Wire to address form
-                    ).animate().fadeIn(delay: 80.ms, duration: 300.ms),
-                  ),
-
-                  _HairlineSliver(),
+               
 
                   // DELIVERY row
                   SliverToBoxAdapter(
@@ -84,13 +78,10 @@ class CheckoutScreen extends ConsumerWidget {
 
                   // PAYMENT row
                   SliverToBoxAdapter(
-                    child: _CheckoutInfoRow(
-                      label: 'PAYMENT',
-                      content: 'Select payment method',
-                      isPlaceholder: true,
-                      showChevron: true,
-                      onTap: () {}, // 🔁 Wire to payment sheet
-                    ).animate().fadeIn(delay: 200.ms, duration: 300.ms),
+                    child:ShippingRow(
+  address: address,
+  onTap: () => context.push('/address/add'),
+).animate().fadeIn(delay: 200.ms, duration: 300.ms),
                   ),
 
                   _HairlineSliver(),
@@ -130,7 +121,9 @@ class CheckoutScreen extends ConsumerWidget {
 
             // ── Sticky PLACE ORDER ─────────────────────────────────────────
             _PlaceOrderButton(
-              onTap: () {}, // 🔁 Wire to order confirmation / payment gateway
+              onTap: () {
+                context.push('/payment?total=${state.orderTotal}');
+              }, // 🔁 Wire to order confirmation / payment gateway
             ),
 
        
@@ -160,7 +153,10 @@ class _CheckoutTopBar extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             GestureDetector(
-              onTap: () => context.pop(),
+              onTap: () {
+
+                context.go(AppRoutes.home);
+},
               child: Text('BACK', style: style),
             ),
             GestureDetector(
@@ -286,7 +282,6 @@ class _CheckoutItemRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
 
     return Column(
       children: [

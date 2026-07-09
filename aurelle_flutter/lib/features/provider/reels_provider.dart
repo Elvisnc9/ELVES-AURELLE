@@ -2,6 +2,7 @@
 /// reels_provider.dart
 /// ─────────────────────────────────────────────────────────────────────────────
 
+import 'package:aurelle_flutter/features/model/brand_model.dart';
 import 'package:aurelle_flutter/features/model/reels_model.dart';
 import 'package:aurelle_flutter/features/model/shop_model.dart';
 import 'package:aurelle_flutter/features/provider/product_detail_provider.dart';
@@ -77,6 +78,7 @@ class ReelProductDetailNotifier extends ProductDetailNotifier {
           isLoading: false,
         ));
 
+  @override
   void selectVariant(int index) {
     state = state.copyWith(
       selectedVariantIndex: index,
@@ -84,10 +86,12 @@ class ReelProductDetailNotifier extends ProductDetailNotifier {
     );
   }
 
+  @override
   void selectImage(int index) {
     state = state.copyWith(selectedImageIndex: index);
   }
 
+  @override
   void toggleWishlist() {
     state = state.copyWith(isInWishlist: !state.isInWishlist);
   }
@@ -152,6 +156,14 @@ final _mockReels = [
         ],
       ),
     ],
+    brand: const BrandProfile(
+  id: 'b1',
+  name: 'Jux Label',
+  followers: 24800,
+  rating: 4.7,
+  reviewCount: 312,
+  tagline: 'Crafted for the modern woman.',
+),
   ),
    ReelModel(
     id: 'r1',
@@ -209,7 +221,17 @@ final _mockReels = [
         ],
       ),
     ],
+    brand: const BrandProfile(
+  id: 'b1',
+  name: 'Jux Label',
+  followers: 24800,
+  rating: 4.7,
+  reviewCount: 312,
+  tagline: 'Crafted for the modern woman.',
+),
   ),
+
+
    ReelModel(
     id: 'r1',
     videoAsset: 'assets/anim/Models_video3.mp4',
@@ -266,6 +288,14 @@ final _mockReels = [
         ],
       ),
     ],
+    brand: const BrandProfile(
+  id: 'b1',
+  name: 'Jux Label',
+  followers: 24800,
+  rating: 4.7,
+  reviewCount: 312,
+  tagline: 'Crafted for the modern woman.',
+),
   ),
 
    ReelModel(
@@ -324,6 +354,14 @@ final _mockReels = [
         ],
       ),
     ],
+    brand: const BrandProfile(
+  id: 'b1',
+  name: 'Jux Label',
+  followers: 24800,
+  rating: 4.7,
+  reviewCount: 312,
+  tagline: 'Crafted for the modern woman.',
+),
   ),
 
    ReelModel(
@@ -382,5 +420,13 @@ final _mockReels = [
         ],
       ),
     ],
+    brand: const BrandProfile(
+  id: 'b1',
+  name: 'Jux Label',
+  followers: 24800,
+  rating: 4.7,
+  reviewCount: 312,
+  tagline: 'Crafted for the modern woman.',
+),
   ),
 ];
