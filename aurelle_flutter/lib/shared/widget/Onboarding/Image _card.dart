@@ -46,7 +46,7 @@ class OverlapImageCard extends StatelessWidget {
 
                 // ── Overflowing image ─────────────────────────────────
                 Positioned(
-                  top: -1.5.h,
+                  top: -1.4.h,
                   left: 8,
                   right: 8,
                   child: SizedBox(

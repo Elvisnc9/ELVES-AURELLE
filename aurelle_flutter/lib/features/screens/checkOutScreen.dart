@@ -155,7 +155,7 @@ class _CheckoutTopBar extends StatelessWidget {
             GestureDetector(
               onTap: () {
 
-                context.go(AppRoutes.home);
+                context.pop();
 },
               child: Text('BACK', style: style),
             ),
