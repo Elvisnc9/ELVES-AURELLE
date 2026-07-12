@@ -307,7 +307,7 @@ class _ShopProductCard extends StatelessWidget {
               width: double.infinity,
               color: AppColors.productPlaceholder,
               child: product.imageUrl != null
-                  ? Image.network(product.imageUrl!, fit: BoxFit.cover)
+                  ? Image.asset(product.imageUrl!, fit: BoxFit.cover)
                   : Center(
                       child: Icon(
                         Icons.person_outline,

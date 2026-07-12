@@ -78,28 +78,39 @@ class ProductDetailNotifier extends StateNotifier<ProductDetailState> {
 const _fallbackVariants = [
   ProductVariant(
     id: 'v1',
-    brand: 'YMC',
+    brand: 'Aurellian',
     productName: 'Green Atomic Cardigan',
     price: 195,
     originalPrice: 325,
+    
     salePercent: 40,
-    images: [],
+    thumbnailUrl: 'assets/images/shop/shop11.png' ,
+    images: [
+      'assets/images/shop/shop11.png',
+      'assets/images/shop/jeans2.png',
+      'assets/images/shop/jeans3.png',
+    ],
     itemCode: '261161F095003',
     itemInfo:
-        'Garter-stitch knit cotton cardigan.\n\n· Colorblocking and loose threads throughout\n· Rib-knit crewneck, hem, and cuffs\n· Button closure\n· Raglan sleeves\n· Corozo hardware',
+        'Garter-stitch knit cotton cardigan. Colorblocking and loose threads throughout Rib-knit crewneck, hem, and cuffs Button closure Raglan sleeves Corozo hardware',
     supplierColor: 'Green',
   ),
   ProductVariant(
     id: 'v2',
-    brand: 'YMC',
+    brand: 'Elves',
     productName: 'Blue Atomic Cardigan',
     price: 195,
     originalPrice: 325,
     salePercent: 40,
-    images: [],
+    thumbnailUrl: 'assets/images/shop/snow_jacket1.png',
+    images: [
+      'assets/images/shop/snow_jacket1.png',
+      'assets/images/shop/snow_jacket2.png',
+      'assets/images/shop/snow_jacket3.png',
+    ],
     itemCode: '261161F095004',
     itemInfo:
-        'Garter-stitch knit cotton cardigan.\n\n· Colorblocking and loose threads throughout',
+        'Garter-stitch knit cotton cardigan. Colorblocking and loose threads throughout',
     supplierColor: 'Blue',
   ),
 ];

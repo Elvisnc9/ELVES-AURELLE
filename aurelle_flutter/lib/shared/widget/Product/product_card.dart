@@ -122,7 +122,7 @@ class _ProductImage extends StatelessWidget {
       height: height,
       color: AppColors.productPlaceholder,
       child: imageUrl != null
-          ? Image.network(
+          ? Image.asset(
               imageUrl!,
               fit: BoxFit.cover,
               errorBuilder: (_, __, ___) => const _Placeholder(),

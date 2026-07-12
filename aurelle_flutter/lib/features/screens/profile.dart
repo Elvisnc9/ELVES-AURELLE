@@ -173,60 +173,30 @@ class _UnauthenticatedHeader extends StatelessWidget {
           ),
         ),
         SizedBox(height: 2.h),
-        Row(
-          children: [
-            // LOGIN — filled black
-            Expanded(
-              child: SizedBox(
-                height: 6.h,
-                child: ElevatedButton(
-                  onPressed: () => context.push(AppRoutes.login),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.black,
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.zero, // editorial: sharp corners
-                    ),
-                  ),
-                  child: Text(
-                    'LOGIN',
-                    style: TextStyle(
-                      fontSize: 12.dp,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 1.4,
-                    ),
-                  ),
-                ),
+        SizedBox(
+          height: 6.h,
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: () => context.push(AppRoutes.login),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.black,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.zero, // editorial: sharp corners
               ),
             ),
-            SizedBox(width: 3.w),
-            // REGISTER — ghost/text
-            Expanded(
-              child: SizedBox(
-                height: 6.h,
-                child: OutlinedButton(
-                  onPressed: () => context.push(AppRoutes.signup),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.black,
-                    side: BorderSide.none, // no border — pure text like SSENSE
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.zero,
-                    ),
-                  ),
-                  child: Text(
-                    'REGISTER',
-                    style: TextStyle(
-                      fontSize: 12.dp,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 1.4,
-                    ),
-                  ),
-                ),
+            child: Text(
+              'LOGIN',
+              style: TextStyle(
+                fontSize: 12.dp,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 1.4,
               ),
             ),
-          ],
+          ),
         ),
+        SizedBox(width: 3.w),
       ],
     );
   }

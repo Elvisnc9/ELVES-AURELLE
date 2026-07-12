@@ -296,7 +296,7 @@ class _CheckoutItemRow extends StatelessWidget {
                 height: 15.h,
                 color: AppColors.productPlaceholder,
                 child: item.imageUrl != null
-                    ? Image.network(item.imageUrl!, fit: BoxFit.cover)
+                    ? Image.asset(item.imageUrl!, fit: BoxFit.cover)
                     : Center(
                         child: Icon(
                           Icons.person_outline,

@@ -60,6 +60,7 @@ class Homescreen extends ConsumerWidget {
                       },
                       onShopNowTap: () {
                         // 🔁 Wire to: context.push(AppRoutes.shop)
+                        context.go(AppRoutes.shop);
                       },
                     ),
             ),

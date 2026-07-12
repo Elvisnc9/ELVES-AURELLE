@@ -2,14 +2,15 @@
 /// shop_model.dart
 /// Pure data models for Shop screen and Product Detail screen.
 /// ─────────────────────────────────────────────────────────────────────────────
+library;
 
 enum ShopCategory { womenswear, menswear, everythingElse }
 
 extension ShopCategoryLabel on ShopCategory {
   String get label {
     switch (this) {
-      case ShopCategory.womenswear:   return 'WOMENSWEAR';
-      case ShopCategory.menswear:     return 'MENSWEAR';
+      case ShopCategory.womenswear:   return 'WEARS';
+      case ShopCategory.menswear:     return 'JEWERIES';
       case ShopCategory.everythingElse: return 'EVERYTHING ELSE';
     }
   }

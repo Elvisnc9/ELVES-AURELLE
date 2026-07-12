@@ -90,7 +90,7 @@ class BrandBottomSheet extends StatelessWidget {
                   ),
                   child: ClipOval(
                     child: brand.avatarUrl != null
-                        ? Image.network(
+                        ? Image.asset(
                             brand.avatarUrl!,
                             fit: BoxFit.cover,
                             errorBuilder: (_, __, ___) =>

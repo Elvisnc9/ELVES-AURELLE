@@ -27,6 +27,10 @@ class AppTypography {
         fontSize: 14, fontWeight: FontWeight.w600, color: primaryColor,
       ),
 
+      bodySmall: GoogleFonts.dancingScript(
+        fontSize: 18.sp, fontWeight: FontWeight.w400, color: secondaryColor,
+      ),
+
       labelMedium: GoogleFonts.inter(
                         fontSize: 13.sp,
                         fontWeight: FontWeight.w600,

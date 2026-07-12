@@ -3,6 +3,7 @@
 /// Pure data models for the Home screen. No logic — just typed containers
 /// that the UI reads from providers.
 /// ─────────────────────────────────────────────────────────────────────────────
+library;
 
 /// A single product card (used in horizontal scroll rows & grids)
 class HomeProductModel {

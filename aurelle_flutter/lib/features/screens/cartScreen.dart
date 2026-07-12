@@ -213,7 +213,7 @@ class _CartItemRow extends StatelessWidget {
                   height: 15.h,
                   color: AppColors.productPlaceholder,
                   child: item.imageUrl != null
-                      ? Image.network(item.imageUrl!, fit: BoxFit.cover)
+                      ? Image.asset(item.imageUrl!, fit: BoxFit.contain)
                       : Center(
                           child: Icon(
                             Icons.person_outline,
