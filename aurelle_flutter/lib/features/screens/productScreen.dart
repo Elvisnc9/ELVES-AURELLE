@@ -370,7 +370,7 @@ class _ImageCarousel extends StatelessWidget {
       onPageChanged: onPageChanged,
       itemBuilder: (context, i) => Image.asset(
         images[i],
-        fit: BoxFit.contain,
+        fit: BoxFit.cover,
         alignment: Alignment.topCenter, // model's face/upper body first
         width: double.infinity,
         height: double.infinity,
@@ -447,7 +447,7 @@ class _ThumbnailStrip extends StatelessWidget {
                 ),
               ),
               child: variants[i].thumbnailUrl != null
-                  ? Image.asset(variants[i].thumbnailUrl!, fit: BoxFit.cover)
+                  ? Image.asset(variants[i].thumbnailUrl!, fit: BoxFit.contain)
                   : Center(
                       child: Icon(
                         Icons.person_outline,

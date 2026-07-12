@@ -23,7 +23,7 @@ import 'package:go_router/go_router.dart' hide NoTransitionPage;
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
-    initialLocation: AppRoutes.home,
+    initialLocation: AppRoutes.splash,
     debugLogDiagnostics: false,
     redirect: (context, state) => null,
 
