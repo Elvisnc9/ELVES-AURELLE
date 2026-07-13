@@ -42,9 +42,8 @@ class ProductDetailNotifier extends StateNotifier<ProductDetailState> {
     _load();
   }
 
-  ProductDetailNotifier.fromState(ProductDetailState initialState)
-      : productId = '',
-        super(initialState);
+  ProductDetailNotifier.fromState(super.initialState)
+      : productId = '';
 
   final String productId;
 
